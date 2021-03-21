@@ -26,6 +26,7 @@ public class Reporter {
    * @param c   the colour
    */
   public static void show(final CardinalDirection cd, final Colour c) {
+    Main.gui.updateLight(cd, c);
     msg(cd + ":\t" + c);
   }
 
