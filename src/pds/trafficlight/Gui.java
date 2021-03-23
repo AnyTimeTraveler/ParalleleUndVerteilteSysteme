@@ -2,13 +2,13 @@ package pds.trafficlight;
 
 import java.awt.GridLayout;
 import javax.swing.JButton;
-import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
 /**
  * TODO: Summary.
  */
-public class Gui extends JDialog implements Runnable {
+public class Gui extends JFrame implements Runnable {
 
   private static final JButton north = new JButton("North");
   private static final JButton south = new JButton("South");
@@ -37,8 +37,7 @@ public class Gui extends JDialog implements Runnable {
     add(exit);
 
     setSize(300, 400);
-    setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
+    setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
   }
 
   /**
