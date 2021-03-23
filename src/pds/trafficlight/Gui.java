@@ -24,15 +24,9 @@ public class Gui extends JDialog implements Runnable {
   public Gui() {
     setLayout(new GridLayout(3, 2, 5, 5));
 
-    north.setBackground(Color.RED);
     add(north);
-
-    south.setBackground(Color.GREEN);
     add(south);
-
-    east.setBackground(Color.YELLOW);
     add(east);
-    west.setBackground(Color.RED);
     add(west);
 
     JButton step = new JButton("Step");
