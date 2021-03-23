@@ -1,11 +1,8 @@
 package pds.trafficlight;
 
-import java.awt.Color;
 import java.awt.GridLayout;
-import java.lang.reflect.InvocationTargetException;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 /**
