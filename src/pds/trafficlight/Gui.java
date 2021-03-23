@@ -2,8 +2,10 @@ package pds.trafficlight;
 
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 /**
@@ -11,10 +13,10 @@ import javax.swing.WindowConstants;
  */
 public class Gui extends JDialog implements Runnable {
 
-  private final JButton north = new JButton("North");
-  private final JButton south = new JButton("South");
-  private final JButton east = new JButton("East");
-  private final JButton west = new JButton("West");
+  private static final JButton north = new JButton("North");
+  private static final JButton south = new JButton("South");
+  private static final JButton east = new JButton("East");
+  private static final JButton west = new JButton("West");
 
   /**
    * TODO: Summary.
@@ -39,6 +41,7 @@ public class Gui extends JDialog implements Runnable {
     add(step);
     JButton exit = new JButton("Exit");
     exit.addActionListener(e -> {
+      System.exit(0);
     });
     add(exit);
 
@@ -50,11 +53,11 @@ public class Gui extends JDialog implements Runnable {
   /**
    * TODO: Summary.
    */
-  public synchronized void updateLight(CardinalDirection dir, Colour colour) {
+  public static synchronized void updateLight(CardinalDirection dir, Colour colour) {
     getLight(dir).setBackground(colour.toAwtColor());
   }
 
-  private JButton getLight(CardinalDirection dir) {
+  private static JButton getLight(CardinalDirection dir) {
     return switch (dir) {
       case NORTH -> north;
       case EAST -> east;
