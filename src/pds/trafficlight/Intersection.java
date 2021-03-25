@@ -20,10 +20,22 @@ public class Intersection {
     SwingUtilities.invokeLater(new Gui());
     CardinalDirection dir = NORTH;
     final CardinalDirection startDirection = NORTH;
-    for (int i = 0; i < 4; i++) {
-      new TrafficLight(dir, startDirection).start();
-      dir = next(dir);
-    }
+
+    TrafficLight north = new TrafficLight(dir, startDirection);
+    dir = next(dir);
+    north.start();
+
+    TrafficLight east = new TrafficLight(dir, startDirection);
+    dir = next(dir);
+    east.start();
+
+    TrafficLight south = new TrafficLight(dir, startDirection);
+    dir = next(dir);
+    south.start();
+
+    TrafficLight west = new TrafficLight(dir, startDirection);
+    west.start();
+
   }
 
 }
