@@ -6,7 +6,7 @@ import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
 /**
- * TODO: Summary.
+ * GUI to represent the current state of all traffic lights better.
  */
 public class Gui extends JFrame implements Runnable {
 
@@ -16,37 +16,39 @@ public class Gui extends JFrame implements Runnable {
   private static final JButton west = new JButton("West");
 
   /**
-   * TODO: Summary.
+   * Create GUI Layout.
    */
   public Gui() {
-    setLayout(new GridLayout(3, 2, 5, 5));
+    setAlwaysOnTop(true);
+    setUndecorated(true);
+    setLayout(new GridLayout(2, 2, 5, 5));
 
     add(north);
     add(south);
     add(east);
     add(west);
 
-    JButton step = new JButton("Step");
-    step.addActionListener(e -> {
-    });
-    add(step);
-    JButton exit = new JButton("Exit");
-    exit.addActionListener(e -> {
-      System.exit(0);
-    });
-    add(exit);
-
-    setSize(300, 400);
+    setSize(300, 300);
     setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
   }
 
   /**
-   * TODO: Summary.
+   * Sets the background colour of the button corresponding to the traffic light in the cardinal
+   * direction.
+   *
+   * @param dir    Direction of the traffic light
+   * @param colour Colour of the traffic light
    */
   public static synchronized void updateLight(CardinalDirection dir, Colour colour) {
     getLight(dir).setBackground(colour.toAwtColor());
   }
 
+  /**
+   * Translate CardinalDirection to a button in the GUI.
+   *
+   * @param dir Direction
+   * @return Button representing that direction
+   */
   private static JButton getLight(CardinalDirection dir) {
     return switch (dir) {
       case NORTH -> north;
