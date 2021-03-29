@@ -1,6 +1,10 @@
 package pds.trafficlight;
 
-import static pds.trafficlight.Colour.next;
+import static pds.trafficlight.CardinalDirection.opposite;
+import static pds.trafficlight.Colour.GREEN;
+import static pds.trafficlight.Colour.RED;
+
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Representation of an autonomous traffic light. A set of four traffic lights are able to provide
@@ -10,8 +14,10 @@ import static pds.trafficlight.Colour.next;
  */
 public class TrafficLight extends Thread {
 
-  private final CardinalDirection cd;
-  private Colour light;
+  private static final Colour[] state = new Colour[4];
+  private static final ReentrantLock lock = new ReentrantLock();
+  private final CardinalDirection locationDir;
+  private final CardinalDirection startAxis;
 
   /**
    * Basic constructor of the traffic light.
@@ -21,24 +27,31 @@ public class TrafficLight extends Thread {
    *            direction 'dir' and its opposite
    */
   public TrafficLight(CardinalDirection cd, CardinalDirection dir) {
-    this.cd = cd;
-    light = Colour.RED;
+    this.locationDir = cd;
+    this.startAxis = dir;
+
+    lock.lock();
+    if (locationDir == startAxis || locationDir == opposite(startAxis)) {
+      setLightState(locationDir, GREEN);
+    } else {
+      setLightState(locationDir, RED);
+    }
+
+    Reporter.show(locationDir, RED);
+    lock.unlock();
   }
 
-  /**
-   * The main loop implementing the switching of the traffic light.
-   */
-  @Override
-  public void run() {
-    while (true) {
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-      light = next(light);
-      Reporter.show(cd, light);
-    }
+  static Colour getLightState(CardinalDirection dir) {
+
+    return state[dir.ordinal()];
+
+  }
+
+  static void setLightState(CardinalDirection dir, Colour colour) {
+
+    state[dir.ordinal()] = colour;
+
+
   }
 
   /**
@@ -49,4 +62,41 @@ public class TrafficLight extends Thread {
   public void halt() {
 
   }
+
+  /**
+   * The main loop implementing the switching of the traffic light.
+   */
+  @Override
+  public void run() {
+    while (true) {
+      lock.lock();
+
+      Colour current = getLightState(locationDir);
+
+      if (current == RED) {
+        if (getLightState(CardinalDirection.next(locationDir)) == RED
+            && getLightState(CardinalDirection.next(opposite(locationDir)))
+            == RED) {
+          setLightState(locationDir, GREEN);
+        }
+      } else {
+        setLightState(locationDir, Colour.next(current));
+      }
+
+      Reporter.show(locationDir, getLightState(locationDir));
+      lock.unlock();
+      sleep(100);
+
+
+    }
+  }
+
+  private void sleep(int millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
 }
