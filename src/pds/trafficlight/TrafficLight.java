@@ -14,6 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class TrafficLight extends Thread {
 
+  private static boolean running = true;
   private static final Colour[] state = new Colour[4];
   private static final ReentrantLock lock = new ReentrantLock();
   private final CardinalDirection locationDir;
@@ -60,7 +61,7 @@ public class TrafficLight extends Thread {
    * has been informed to halt.
    */
   public void halt() {
-
+    running = false;
   }
 
   /**
@@ -68,7 +69,7 @@ public class TrafficLight extends Thread {
    */
   @Override
   public void run() {
-    while (true) {
+    while (running) {
       lock.lock();
 
       Colour current = getLightState(locationDir);
@@ -85,7 +86,7 @@ public class TrafficLight extends Thread {
 
       Reporter.show(locationDir, getLightState(locationDir));
       lock.unlock();
-      sleep(100);
+      sleep(50);
 
 
     }

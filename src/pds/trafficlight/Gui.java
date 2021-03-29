@@ -1,6 +1,7 @@
 package pds.trafficlight;
 
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
@@ -21,12 +22,34 @@ public class Gui extends JFrame implements Runnable {
   public Gui() {
     setAlwaysOnTop(true);
     setUndecorated(true);
-    setLayout(new GridLayout(2, 2, 5, 5));
 
+    GridBagLayout gridbag = new GridBagLayout();
+    GridBagConstraints c = new GridBagConstraints();
+    setLayout(gridbag);
+
+    c.fill = GridBagConstraints.BOTH;
+    gridbag.setConstraints(north, c);
     add(north);
+
+    c.fill = GridBagConstraints.REMAINDER;
+    gridbag.setConstraints(south, c);
     add(south);
+
+    c.fill = GridBagConstraints.BOTH;
+    gridbag.setConstraints(east, c);
     add(east);
+
+    c.fill = GridBagConstraints.REMAINDER;
+    gridbag.setConstraints(west, c);
     add(west);
+
+    JButton exit = new JButton("Exit");
+    exit.addActionListener(e -> {
+      System.exit(0);
+    });
+    c.gridwidth = 2;
+    gridbag.setConstraints(exit, c);
+    add(exit);
 
     setSize(300, 300);
     setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

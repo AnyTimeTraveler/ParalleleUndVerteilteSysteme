@@ -10,6 +10,8 @@ import javax.swing.SwingUtilities;
  */
 public class Intersection {
 
+  public static TrafficLight[] lights = new TrafficLight[4];
+
   /**
    * Implements the main method for this class. Constructs the traffic lights and activates them
    * (threads).
@@ -18,23 +20,14 @@ public class Intersection {
    */
   public static void main(String[] args) {
     SwingUtilities.invokeLater(new Gui());
-    CardinalDirection dir = NORTH;
     final CardinalDirection startDirection = NORTH;
+    CardinalDirection dir = startDirection;
 
-    TrafficLight north = new TrafficLight(dir, startDirection);
-    dir = next(dir);
-    north.start();
-
-    TrafficLight east = new TrafficLight(dir, startDirection);
-    dir = next(dir);
-    east.start();
-
-    TrafficLight south = new TrafficLight(dir, startDirection);
-    dir = next(dir);
-    south.start();
-
-    TrafficLight west = new TrafficLight(dir, startDirection);
-    west.start();
+    for (int i = 0; i < 4; i++) {
+      lights[i] = new TrafficLight(dir, startDirection);
+      lights[i].start();
+      dir = next(dir);
+    }
 
   }
 
