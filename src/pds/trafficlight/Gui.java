@@ -1,9 +1,11 @@
 package pds.trafficlight;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JSlider;
 import javax.swing.WindowConstants;
 
 /**
@@ -11,47 +13,93 @@ import javax.swing.WindowConstants;
  */
 public class Gui extends JFrame implements Runnable {
 
-  private static final JButton north = new JButton("North");
-  private static final JButton south = new JButton("South");
-  private static final JButton east = new JButton("East");
-  private static final JButton west = new JButton("West");
+  private static final JButton[] buttons = {
+      new JButton("North"),
+      new JButton("East"),
+      new JButton("South"),
+      new JButton("West")
+  };
+  private static final int[][] buttonPositions = {
+      {2, 0},
+      {0, 2},
+      {2, 4},
+      {4, 2},
+  };
+
+  public static final int HISTORY_MAX = 10_000;
+  private static int historyPos = 1;
+  private static final Color[][] history = new Color[HISTORY_MAX][4];
+  private static JSlider slider;
 
   /**
    * Create GUI Layout.
    */
   public Gui() {
     setAlwaysOnTop(true);
-    setUndecorated(true);
+
+    for (int i = 0; i < HISTORY_MAX; i++) {
+      history[i][0] = Color.BLACK;
+      history[i][1] = Color.BLACK;
+      history[i][2] = Color.BLACK;
+      history[i][3] = Color.BLACK;
+    }
+
+    JButton startButton = new JButton("Start");
+    JButton stopButton = new JButton("Stop");
+
+    startButton.setEnabled(false);
+    stopButton.setEnabled(true);
+
+    startButton.addActionListener(e -> {
+      Intersection.start();
+      startButton.setEnabled(false);
+      stopButton.setEnabled(true);
+    });
+    stopButton.addActionListener(e -> {
+      Intersection.stop();
+      startButton.setEnabled(true);
+      stopButton.setEnabled(false);
+    });
 
     GridBagLayout gridbag = new GridBagLayout();
-    GridBagConstraints c = new GridBagConstraints();
+    GridBagConstraints gbc = new GridBagConstraints();
     setLayout(gridbag);
 
-    c.fill = GridBagConstraints.BOTH;
-    gridbag.setConstraints(north, c);
-    add(north);
+    gbc.weightx = 1;
+    gbc.weighty = 1;
+    gbc.gridwidth = 2;
+    gbc.gridheight = 2;
+    gbc.fill = GridBagConstraints.BOTH;
 
-    c.fill = GridBagConstraints.REMAINDER;
-    gridbag.setConstraints(south, c);
-    add(south);
+    for (int i = 0; i < 4; i++) {
+      gbc.gridx = buttonPositions[i][0];
+      gbc.gridy = buttonPositions[i][1];
+      add(buttons[i], gbc);
+    }
 
-    c.fill = GridBagConstraints.BOTH;
-    gridbag.setConstraints(east, c);
-    add(east);
+    gbc.gridx = 0;
+    gbc.gridy = 6;
+    gbc.gridheight = 2;
+    gbc.gridwidth = 3;
+    gbc.weighty = 0.5;
+    add(stopButton, gbc);
+    gbc.gridx = 4;
+    add(startButton, gbc);
 
-    c.fill = GridBagConstraints.REMAINDER;
-    gridbag.setConstraints(west, c);
-    add(west);
-
-    JButton exit = new JButton("Exit");
-    exit.addActionListener(e -> {
-      System.exit(0);
+    slider = new JSlider(0, HISTORY_MAX, 0);
+    slider.addChangeListener(e -> {
+      for (int i = 0; i < 4; i++) {
+        buttons[i].setBackground(history[slider.getValue()][i]);
+      }
     });
-    c.gridwidth = 2;
-    gridbag.setConstraints(exit, c);
-    add(exit);
+    gbc.gridx = 0;
+    gbc.gridy = 8;
+    gbc.gridwidth = 6;
+    gbc.gridheight = 1;
+    gbc.weighty = 0.2;
+    add(slider, gbc);
 
-    setSize(300, 300);
+    setSize(300, 350);
     setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
   }
 
@@ -63,7 +111,11 @@ public class Gui extends JFrame implements Runnable {
    * @param colour Colour of the traffic light
    */
   public static synchronized void updateLight(CardinalDirection dir, Colour colour) {
-    getLight(dir).setBackground(colour.toAwtColor());
+    System.arraycopy(history[historyPos - 1], 0, history[historyPos], 0, 4);
+    history[historyPos][dir.ordinal()] = colour.toAwtColor();
+    slider.setValue(historyPos);
+    historyPos++;
+    historyPos %= HISTORY_MAX;
   }
 
   /**
@@ -73,12 +125,7 @@ public class Gui extends JFrame implements Runnable {
    * @return Button representing that direction
    */
   private static JButton getLight(CardinalDirection dir) {
-    return switch (dir) {
-      case NORTH -> north;
-      case EAST -> east;
-      case SOUTH -> south;
-      case WEST -> west;
-    };
+    return buttons[dir.ordinal()];
   }
 
   @Override

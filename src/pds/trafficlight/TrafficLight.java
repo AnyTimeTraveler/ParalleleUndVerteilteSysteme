@@ -18,7 +18,6 @@ public class TrafficLight extends Thread {
   private static final Colour[] state = new Colour[4];
   private static final ReentrantLock lock = new ReentrantLock();
   private final CardinalDirection locationDir;
-  private final CardinalDirection startAxis;
 
   /**
    * Basic constructor of the traffic light.
@@ -29,10 +28,10 @@ public class TrafficLight extends Thread {
    */
   public TrafficLight(CardinalDirection cd, CardinalDirection dir) {
     this.locationDir = cd;
-    this.startAxis = dir;
+    running = true;
 
     lock.lock();
-    if (locationDir == startAxis || locationDir == opposite(startAxis)) {
+    if (locationDir == dir || locationDir == opposite(dir)) {
       setLightState(locationDir, GREEN);
     } else {
       setLightState(locationDir, RED);
@@ -43,16 +42,11 @@ public class TrafficLight extends Thread {
   }
 
   static Colour getLightState(CardinalDirection dir) {
-
     return state[dir.ordinal()];
-
   }
 
   static void setLightState(CardinalDirection dir, Colour colour) {
-
     state[dir.ordinal()] = colour;
-
-
   }
 
   /**
