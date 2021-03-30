@@ -26,7 +26,7 @@ public class Gui extends JFrame implements Runnable {
       {4, 2},
   };
 
-  public static final int HISTORY_MAX = 10_000;
+  public static final int HISTORY_MAX = 1_000;
   private static int historyPos = 1;
   private static final Color[][] history = new Color[HISTORY_MAX][4];
   private static JSlider slider;
@@ -42,6 +42,10 @@ public class Gui extends JFrame implements Runnable {
       history[i][1] = Color.BLACK;
       history[i][2] = Color.BLACK;
       history[i][3] = Color.BLACK;
+    }
+
+    for (int i = 0; i < 4; i++) {
+      buttons[i].setBackground(Color.BLACK);
     }
 
     JButton startButton = new JButton("Start");
@@ -86,7 +90,7 @@ public class Gui extends JFrame implements Runnable {
     gbc.gridx = 4;
     add(startButton, gbc);
 
-    slider = new JSlider(0, HISTORY_MAX, 0);
+    slider = new JSlider(0, HISTORY_MAX - 1, 0);
     slider.addChangeListener(e -> {
       for (int i = 0; i < 4; i++) {
         buttons[i].setBackground(history[slider.getValue()][i]);
@@ -99,7 +103,7 @@ public class Gui extends JFrame implements Runnable {
     gbc.weighty = 0.2;
     add(slider, gbc);
 
-    setSize(300, 350);
+    setSize(300 * 2, 350 * 2);
     setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
   }
 
@@ -111,21 +115,11 @@ public class Gui extends JFrame implements Runnable {
    * @param colour Colour of the traffic light
    */
   public static synchronized void updateLight(CardinalDirection dir, Colour colour) {
-    System.arraycopy(history[historyPos - 1], 0, history[historyPos], 0, 4);
+    int lastPos = historyPos == 0 ? HISTORY_MAX - 1 : historyPos - 1;
+    System.arraycopy(history[lastPos], 0, history[historyPos], 0, 4);
     history[historyPos][dir.ordinal()] = colour.toAwtColor();
     slider.setValue(historyPos);
-    historyPos++;
-    historyPos %= HISTORY_MAX;
-  }
-
-  /**
-   * Translate CardinalDirection to a button in the GUI.
-   *
-   * @param dir Direction
-   * @return Button representing that direction
-   */
-  private static JButton getLight(CardinalDirection dir) {
-    return buttons[dir.ordinal()];
+    historyPos = historyPos == HISTORY_MAX - 1 ? 0 : historyPos + 1;
   }
 
   @Override
