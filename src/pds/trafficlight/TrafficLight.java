@@ -4,8 +4,6 @@ import static pds.trafficlight.CardinalDirection.opposite;
 import static pds.trafficlight.Colour.GREEN;
 import static pds.trafficlight.Colour.RED;
 
-import java.util.concurrent.locks.ReentrantLock;
-
 /**
  * Representation of an autonomous traffic light. A set of four traffic lights are able to provide
  * 'safe' signalling at an intersection, by interacting with each other. A traffic light is
@@ -16,9 +14,9 @@ public class TrafficLight extends Thread {
 
   private static boolean running = true;
   private static final Colour[] state = new Colour[4];
-  private static final ReentrantLock lock = new ReentrantLock();
+  private static final Object lock = new Object();
   private final CardinalDirection locationDir;
-  private CardinalDirection startAxis;
+  private final CardinalDirection startAxis;
 
   /**
    * Basic constructor of the traffic light.
@@ -57,44 +55,29 @@ public class TrafficLight extends Thread {
    */
   @Override
   public void run() {
-
-    lock.lock();
-    if (locationDir == startAxis || locationDir == opposite(startAxis)) {
-      setLightState(locationDir, GREEN);
-    }
-
-    Reporter.show(locationDir, RED);
-    lock.unlock();
-
-    while (running) {
-      lock.lock();
-
-      Colour current = getLightState(locationDir);
-
-      if (current == RED) {
-        if (getLightState(CardinalDirection.next(locationDir)) == RED
-            && getLightState(CardinalDirection.next(opposite(locationDir)))
-            == RED) {
-          setLightState(locationDir, GREEN);
-        }
-      } else {
-        setLightState(locationDir, Colour.next(current));
+    synchronized (lock) {
+      if (locationDir == startAxis || locationDir == opposite(startAxis)) {
+        setLightState(locationDir, GREEN);
       }
 
-      Reporter.show(locationDir, getLightState(locationDir));
-      lock.unlock();
-      sleep(50);
+      Reporter.show(locationDir, RED);
+    }
 
+    while (running) {
+      synchronized (lock) {
+        Colour current = getLightState(locationDir);
 
+        if (current == RED) {
+          if (getLightState(CardinalDirection.next(locationDir)) == RED
+              && getLightState(CardinalDirection.next(opposite(locationDir))) == RED) {
+            setLightState(locationDir, GREEN);
+          }
+        } else {
+          setLightState(locationDir, Colour.next(current));
+        }
+
+        Reporter.show(locationDir, getLightState(locationDir));
+      }
     }
   }
-
-  private void sleep(int millis) {
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-  }
-
 }

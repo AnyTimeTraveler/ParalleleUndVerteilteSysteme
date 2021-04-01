@@ -44,17 +44,4 @@ public enum Colour {
         return RED; // catch all
     }
   }
-
-  /**
-   * Returns the equivalent AWT color.
-   *
-   * @return    the equivalent AWT color
-   */
-  public Color toAwtColor() {
-    return switch (this) {
-      case RED -> Color.RED;
-      case GREEN -> Color.GREEN;
-      case YELLOW -> Color.YELLOW;
-    };
-  }
 }

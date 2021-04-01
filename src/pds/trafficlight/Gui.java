@@ -3,6 +3,7 @@ package pds.trafficlight;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JSlider;
@@ -26,9 +27,7 @@ public class Gui extends JFrame implements Runnable {
       {4, 2},
   };
 
-  public static final int HISTORY_MAX = 1_000;
-  private static int historyPos = 1;
-  private static final Color[][] history = new Color[HISTORY_MAX][4];
+  private static final ArrayList<Color[]> history = new ArrayList<>(100_000);
   private static JSlider slider;
 
   /**
@@ -37,21 +36,16 @@ public class Gui extends JFrame implements Runnable {
   public Gui() {
     setAlwaysOnTop(true);
 
-    for (int i = 0; i < HISTORY_MAX; i++) {
-      history[i][0] = Color.BLACK;
-      history[i][1] = Color.BLACK;
-      history[i][2] = Color.BLACK;
-      history[i][3] = Color.BLACK;
-    }
-
     for (int i = 0; i < 4; i++) {
       buttons[i].setBackground(Color.BLACK);
     }
 
     JButton startButton = new JButton("Start");
+    JButton clearButton = new JButton("Clear History");
     JButton stopButton = new JButton("Stop");
 
     startButton.setEnabled(false);
+    clearButton.setEnabled(true);
     stopButton.setEnabled(true);
 
     startButton.addActionListener(e -> {
@@ -59,15 +53,15 @@ public class Gui extends JFrame implements Runnable {
       startButton.setEnabled(false);
       stopButton.setEnabled(true);
     });
+    clearButton.addActionListener(e -> resetHistory());
     stopButton.addActionListener(e -> {
       Intersection.stop();
       startButton.setEnabled(true);
       stopButton.setEnabled(false);
     });
 
-    GridBagLayout gridbag = new GridBagLayout();
     GridBagConstraints gbc = new GridBagConstraints();
-    setLayout(gridbag);
+    setLayout(new GridBagLayout());
 
     gbc.weightx = 1;
     gbc.weighty = 1;
@@ -84,18 +78,22 @@ public class Gui extends JFrame implements Runnable {
     gbc.gridx = 0;
     gbc.gridy = 6;
     gbc.gridheight = 2;
-    gbc.gridwidth = 3;
+    gbc.gridwidth = 2;
     gbc.weighty = 0.5;
     add(stopButton, gbc);
-    gbc.gridx = 4;
+    gbc.gridx = 3;
+    add(clearButton, gbc);
+    gbc.gridx = 5;
     add(startButton, gbc);
 
-    slider = new JSlider(0, HISTORY_MAX - 1, 0);
+    slider = new JSlider(0, 0, 0);
     slider.addChangeListener(e -> {
+      Color[] colors = history.get(slider.getValue());
       for (int i = 0; i < 4; i++) {
-        buttons[i].setBackground(history[slider.getValue()][i]);
+        buttons[i].setBackground(colors[i]);
       }
     });
+    resetHistory();
     gbc.gridx = 0;
     gbc.gridy = 8;
     gbc.gridwidth = 6;
@@ -107,6 +105,13 @@ public class Gui extends JFrame implements Runnable {
     setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
   }
 
+  private void resetHistory() {
+    history.clear();
+    history.add(new Color[]{Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK});
+    slider.setValue(0);
+    slider.setMaximum(0);
+  }
+
   /**
    * Sets the background colour of the button corresponding to the traffic light in the cardinal
    * direction.
@@ -115,15 +120,35 @@ public class Gui extends JFrame implements Runnable {
    * @param colour Colour of the traffic light
    */
   public static synchronized void updateLight(CardinalDirection dir, Colour colour) {
-    int lastPos = historyPos == 0 ? HISTORY_MAX - 1 : historyPos - 1;
-    System.arraycopy(history[lastPos], 0, history[historyPos], 0, 4);
-    history[historyPos][dir.ordinal()] = colour.toAwtColor();
-    slider.setValue(historyPos);
-    historyPos = historyPos == HISTORY_MAX - 1 ? 0 : historyPos + 1;
+    Color[] colors = new Color[]{
+        buttons[0].getBackground(),
+        buttons[1].getBackground(),
+        buttons[2].getBackground(),
+        buttons[3].getBackground(),
+    };
+    colors[dir.ordinal()] = toAwtColor(colour);
+    history.add(colors);
+
+    slider.setMaximum(history.size() - 1);
+    slider.setValue(history.size() - 1);
   }
 
   @Override
   public void run() {
     setVisible(true);
+  }
+
+
+  /**
+   * Returns the equivalent AWT color.
+   *
+   * @return the equivalent AWT color
+   */
+  public static Color toAwtColor(Colour colour) {
+    return switch (colour) {
+      case RED -> Color.RED;
+      case GREEN -> Color.GREEN;
+      case YELLOW -> Color.YELLOW;
+    };
   }
 }
