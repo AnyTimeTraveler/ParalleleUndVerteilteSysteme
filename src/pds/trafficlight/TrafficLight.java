@@ -31,13 +31,14 @@ public class TrafficLight extends Thread {
     running = true;
 
     setLightState(locationDir, RED);
+    Reporter.show(locationDir, RED);
   }
 
-  static Colour getLightState(CardinalDirection dir) {
+  private static Colour getLightState(CardinalDirection dir) {
     return state[dir.ordinal()];
   }
 
-  static void setLightState(CardinalDirection dir, Colour colour) {
+  private static void setLightState(CardinalDirection dir, Colour colour) {
     state[dir.ordinal()] = colour;
   }
 
@@ -58,9 +59,8 @@ public class TrafficLight extends Thread {
     synchronized (lock) {
       if (locationDir == startAxis || locationDir == opposite(startAxis)) {
         setLightState(locationDir, GREEN);
+        Reporter.show(locationDir, GREEN);
       }
-
-      Reporter.show(locationDir, RED);
     }
 
     while (running) {
