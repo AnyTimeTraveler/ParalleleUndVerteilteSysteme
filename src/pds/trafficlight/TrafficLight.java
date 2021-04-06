@@ -1,9 +1,11 @@
 package pds.trafficlight;
 
-import static pds.trafficlight.CardinalDirection.NORTH;
+import static pds.trafficlight.CardinalDirection.next;
 import static pds.trafficlight.CardinalDirection.opposite;
 import static pds.trafficlight.Colour.GREEN;
 import static pds.trafficlight.Colour.RED;
+
+import java.util.Arrays;
 
 /**
  * Representation of an autonomous traffic light. A set of four traffic lights are able to provide
@@ -14,11 +16,11 @@ import static pds.trafficlight.Colour.RED;
 public class TrafficLight extends Thread {
 
   private static volatile boolean running = true;
-  private static volatile CardinalDirection nextColour = NORTH;
+  private static volatile CardinalDirection currentAxis;
+  private static final boolean[] lightsDone = new boolean[CardinalDirection.cardinality];
   private static final Object lock = new Object();
-  private Colour state = RED;
-  private final CardinalDirection locationDir;
-  private final CardinalDirection startAxis;
+  private Colour state;
+  private final CardinalDirection location;
 
   /**
    * Basic constructor of the traffic light.
@@ -28,11 +30,11 @@ public class TrafficLight extends Thread {
    *            direction 'dir' and its opposite
    */
   public TrafficLight(CardinalDirection cd, CardinalDirection dir) {
-    startAxis = dir;
-    this.locationDir = cd;
+    currentAxis = dir;
+    this.location = cd;
     running = true;
-
-    Reporter.show(locationDir, RED);
+    state = RED;
+    Reporter.show(location, RED);
   }
 
   /**
@@ -49,29 +51,36 @@ public class TrafficLight extends Thread {
    */
   @Override
   public void run() {
-    synchronized (lock) {
-      if (locationDir == startAxis || locationDir == opposite(startAxis)) {
-        state = GREEN;
-        Reporter.show(locationDir, GREEN);
-      }
-    }
-
     while (running) {
-      synchronized (lock) {
-        Colour current = getLightState(locationDir);
-
-        if (current == RED) {
-          if (getLightState(CardinalDirection.next(locationDir)) == RED
-              && getLightState(CardinalDirection.next(opposite(locationDir))) == RED) {
-            setLightState(locationDir, GREEN);
-            Reporter.show(locationDir, getLightState(locationDir));
+      if (state == RED) {
+        if (location == currentAxis || location == opposite(currentAxis)) {
+          synchronized (lock) {
+            lightsDone[location.ordinal()] = true;
+            if (allLightsDone()) {
+              currentAxis = next(currentAxis);
+              state = GREEN;
+              Reporter.show(location, state);
+              Arrays.fill(lightsDone, false);
+            }
           }
         } else {
-          setLightState(locationDir, Colour.next(current));
-          Reporter.show(locationDir, getLightState(locationDir));
+          synchronized (lock) {
+            lightsDone[location.ordinal()] = true;
+          }
         }
-
+      } else {
+        state = Colour.next(state);
+        Reporter.show(location, state);
       }
     }
+  }
+
+  private boolean allLightsDone() {
+    for (boolean lightDone : lightsDone) {
+      if (!lightDone) {
+        return false;
+      }
+    }
+    return true;
   }
 }
