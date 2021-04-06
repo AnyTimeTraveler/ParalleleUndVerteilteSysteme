@@ -1,11 +1,8 @@
 package pds.trafficlight;
 
-import static pds.trafficlight.CardinalDirection.next;
 import static pds.trafficlight.CardinalDirection.opposite;
-import static pds.trafficlight.Colour.GREEN;
 import static pds.trafficlight.Colour.RED;
-
-import java.util.Arrays;
+import static pds.trafficlight.Colour.next;
 
 /**
  * Representation of an autonomous traffic light. A set of four traffic lights are able to provide
@@ -17,7 +14,7 @@ public class TrafficLight extends Thread {
 
   private static volatile boolean running = true;
   private static volatile CardinalDirection currentAxis;
-  private static final boolean[] lightsDone = new boolean[CardinalDirection.cardinality];
+  private static volatile int redLightCount = 0;
   private static final Object lock = new Object();
   private Colour state;
   private final CardinalDirection location;
@@ -35,6 +32,7 @@ public class TrafficLight extends Thread {
     running = true;
     state = RED;
     Reporter.show(location, RED);
+    redLightCount = CardinalDirection.cardinality;
   }
 
   /**
@@ -46,6 +44,24 @@ public class TrafficLight extends Thread {
     running = false;
   }
 
+  private void setLight(Colour colour) {
+    if (state == colour) {
+      return;
+    }
+    if (state == RED) {
+      synchronized (lock) {
+        redLightCount--;
+      }
+    }
+    state = colour;
+    Reporter.show(location, state);
+    if (colour == RED) {
+      synchronized (lock) {
+        redLightCount++;
+      }
+    }
+  }
+
   /**
    * The main loop implementing the switching of the traffic light.
    */
@@ -53,34 +69,23 @@ public class TrafficLight extends Thread {
   public void run() {
     while (running) {
       if (state == RED) {
-        if (location == currentAxis || location == opposite(currentAxis)) {
-          synchronized (lock) {
-            lightsDone[location.ordinal()] = true;
-            if (allLightsDone()) {
-              currentAxis = next(currentAxis);
-              state = GREEN;
-              Reporter.show(location, state);
-              Arrays.fill(lightsDone, false);
-            }
+        synchronized (lock) {
+          if (location == currentAxis || location == opposite(currentAxis)) {
+            setLight(next(state));
           }
-        } else {
-          synchronized (lock) {
-            lightsDone[location.ordinal()] = true;
+        }
+      } else if (next(state) == RED) {
+        synchronized (lock) {
+          if (location == currentAxis || location == opposite(currentAxis)) {
+            setLight(next(state));
+          }
+          if (redLightCount == CardinalDirection.cardinality) {
+            currentAxis = CardinalDirection.next(currentAxis);
           }
         }
       } else {
-        state = Colour.next(state);
-        Reporter.show(location, state);
+        setLight(next(state));
       }
     }
-  }
-
-  private boolean allLightsDone() {
-    for (boolean lightDone : lightsDone) {
-      if (!lightDone) {
-        return false;
-      }
-    }
-    return true;
   }
 }
