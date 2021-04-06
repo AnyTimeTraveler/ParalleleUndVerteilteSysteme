@@ -24,7 +24,7 @@ public class Intersection {
   }
 
   /**
-   * Start.
+   * Start all traffic lights.
    */
   public static void start() {
     final CardinalDirection startDirection = NORTH;
@@ -37,6 +37,9 @@ public class Intersection {
     }
   }
 
+  /**
+   * Stop all traffic light threads.
+   */
   public static void stop() {
     lights[0].halt();
   }
