@@ -19,27 +19,20 @@ package pds.trafficlight;
  */
 public class Reporter {
 
-  static int i = 0;
-
   /**
    * Shows the cardinal direction and the colour of a traffic light.
    *
-   * @param cd  the cardinal direction
-   * @param c   the colour
+   * @param cd the cardinal direction
+   * @param c  the colour
    */
   public static void show(final CardinalDirection cd, final Colour c) {
-//    Gui.updateLight(cd, c);
     msg(cd + ":\t" + c);
-    i++;
-    if (i >= 100){
-      System.exit(0);
-    }
   }
 
   /**
    * Shows a general message.
    *
-   * @param s   the message string
+   * @param s the message string
    */
   public static void msg(final String s) {
     System.out.println(s);

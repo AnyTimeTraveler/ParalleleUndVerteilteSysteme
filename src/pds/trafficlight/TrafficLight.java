@@ -3,6 +3,11 @@ package pds.trafficlight;
 import static pds.trafficlight.CardinalDirection.opposite;
 import static pds.trafficlight.Colour.RED;
 import static pds.trafficlight.Colour.next;
+import static pds.trafficlight.TrafficLight.Cycle.CAN_RUN;
+import static pds.trafficlight.TrafficLight.Cycle.ENDED;
+import static pds.trafficlight.TrafficLight.Cycle.RUNNING;
+
+import java.util.Arrays;
 
 /**
  * Representation of an autonomous traffic light. A set of four traffic lights are able to provide
@@ -12,12 +17,18 @@ import static pds.trafficlight.Colour.next;
  */
 public class TrafficLight extends Thread {
 
+  enum Cycle {
+    CAN_RUN,
+    RUNNING,
+    ENDED,
+  }
+
   private static volatile boolean running = true;
-  private static volatile CardinalDirection currentAxis;
-  private static volatile int redLightCount = 0;
+  private static volatile CardinalDirection dir;
+  private static final Cycle[] cycle = new Cycle[CardinalDirection.cardinality];
   private static final Object lock = new Object();
   private Colour state;
-  private final CardinalDirection location;
+  private final CardinalDirection cd;
 
   /**
    * Basic constructor of the traffic light.
@@ -27,12 +38,12 @@ public class TrafficLight extends Thread {
    *            direction 'dir' and its opposite
    */
   public TrafficLight(CardinalDirection cd, CardinalDirection dir) {
-    currentAxis = dir;
-    this.location = cd;
+    TrafficLight.dir = dir;
+    this.cd = cd;
     running = true;
     state = RED;
-    Reporter.show(location, RED);
-    redLightCount = CardinalDirection.cardinality;
+    Reporter.show(cd, RED);
+    cycle[cd.ordinal()] = CAN_RUN;
   }
 
   /**
@@ -44,24 +55,6 @@ public class TrafficLight extends Thread {
     running = false;
   }
 
-  private void setLight(Colour colour) {
-    if (state == colour) {
-      return;
-    }
-    if (state == RED) {
-      synchronized (lock) {
-        redLightCount--;
-      }
-    }
-    state = colour;
-    Reporter.show(location, state);
-    if (colour == RED) {
-      synchronized (lock) {
-        redLightCount++;
-      }
-    }
-  }
-
   /**
    * The main loop implementing the switching of the traffic light.
    */
@@ -70,22 +63,43 @@ public class TrafficLight extends Thread {
     while (running) {
       if (state == RED) {
         synchronized (lock) {
-          if (location == currentAxis || location == opposite(currentAxis)) {
-            setLight(next(state));
-          }
-        }
-      } else if (next(state) == RED) {
-        synchronized (lock) {
-          if (location == currentAxis || location == opposite(currentAxis)) {
-            setLight(next(state));
-          }
-          if (redLightCount == CardinalDirection.cardinality) {
-            currentAxis = CardinalDirection.next(currentAxis);
+          if (locationOnAxis() && cycle[cd.ordinal()] == CAN_RUN) {
+            cycle[cd.ordinal()] = RUNNING;
+            nextState();
           }
         }
       } else {
-        setLight(next(state));
+        nextState();
+
+        if (state == RED) {
+          synchronized (lock) {
+            cycle[cd.ordinal()] = ENDED;
+            if (noneRunning()) {
+              dir = CardinalDirection.next(dir);
+              Arrays.fill(cycle, CAN_RUN);
+              System.out.println();
+            }
+          }
+        }
       }
     }
+  }
+
+  private void nextState() {
+    state = next(state);
+    Reporter.show(cd, state);
+  }
+
+  private boolean noneRunning() {
+    for (Cycle c : cycle) {
+      if (c == RUNNING) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private boolean locationOnAxis() {
+    return cd == dir || cd == opposite(dir);
   }
 }

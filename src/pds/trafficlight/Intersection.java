@@ -3,8 +3,6 @@ package pds.trafficlight;
 import static pds.trafficlight.CardinalDirection.NORTH;
 import static pds.trafficlight.CardinalDirection.next;
 
-import javax.swing.SwingUtilities;
-
 /**
  * Entrypoint.
  */
@@ -18,15 +16,7 @@ public class Intersection {
    *
    * @param args not used
    */
-  public static void main(String[] args) {
-//    SwingUtilities.invokeLater(new Gui());
-    start();
-  }
-
-  /**
-   * Start all traffic lights.
-   */
-  public static void start() {
+  public static void main(String[] args) throws InterruptedException {
     final CardinalDirection startDirection = NORTH;
     CardinalDirection dir = startDirection;
 
@@ -34,16 +24,11 @@ public class Intersection {
       lights[i] = new TrafficLight(dir, startDirection);
       dir = next(dir);
     }
+    System.out.println();
     for (int i = 0; i < 4; i++) {
       lights[i].start();
     }
-  }
-
-  /**
-   * Stop all traffic light threads.
-   */
-  public static void stop() {
+    Thread.sleep(5);
     lights[0].halt();
   }
-
 }
