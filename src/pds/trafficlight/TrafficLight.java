@@ -1,52 +1,78 @@
 package pds.trafficlight;
 
-import static pds.trafficlight.Colour.next;
-
-/**
- * Representation of an autonomous traffic light. A set of four traffic lights are able to provide
- * 'safe' signalling at an intersection, by interacting with each other. A traffic light is
- * represented by a separate thread and all threads interact with each other using shared memory.
- * [PVS-21SS]
- */
 public class TrafficLight extends Thread {
+  CardinalDirection cd;
+  CardinalDirection dir;
+  Colour colour;
 
-  private final CardinalDirection cd;
-  private Colour light;
+  private static boolean running = true;
 
-  /**
-   * Basic constructor of the traffic light.
-   *
-   * @param cd  the cardinal direction of the location of this traffic light at the intersection
-   * @param dir the scheduling will start (first green lights) along the axis between the cardinal
-   *            direction 'dir' and its opposite
-   */
-  public TrafficLight(CardinalDirection cd, CardinalDirection dir) {
+  TrafficLight(CardinalDirection cd, CardinalDirection dir) {
     this.cd = cd;
-    light = Colour.RED;
+    this.dir = dir;
+    colour = Colour.RED;
   }
 
-  /**
-   * The main loop implementing the switching of the traffic light.
-   */
   @Override
   public void run() {
-    while (true) {
+    while (running) {
       try {
-        Thread.sleep(1000);
+        CardinalDirection rightSide = CardinalDirection.next(cd);
+        Colour rightSideColour = Intersection.farben.get(rightSide.ordinal());
+
+        CardinalDirection leftSide = CardinalDirection.opposite(rightSide);
+        Colour leftSideColour = Intersection.farben.get(leftSide.ordinal());
+
+        if ((cd == CardinalDirection.NORTH || cd == CardinalDirection.SOUTH)
+            && (cd == Intersection.sharedDirection || dir == Intersection.sharedDirection)) {
+          if (rightSideColour == Colour.RED
+              && leftSideColour == Colour.RED) {
+
+            Intersection.sem.acquire();
+            colour = Colour.next(colour);
+            Intersection.farben.set(cd.ordinal(), colour); // 2 parameters, index, new value
+            Reporter.show(cd, colour);
+
+            if (colour == Colour.RED && Intersection.farben.get(dir.ordinal()) == Colour.RED) {
+              Intersection.sharedDirection = CardinalDirection.next(Intersection.sharedDirection);
+
+            }
+            Intersection.sem.release();
+          }
+        } else if ((cd == CardinalDirection.EAST || cd == CardinalDirection.WEST)
+            && (cd == Intersection.sharedDirection || dir == Intersection.sharedDirection)) {
+
+
+          if (rightSideColour == Colour.RED
+              && leftSideColour == Colour.RED) {
+
+            Intersection.sem.acquire();
+            colour = Colour.next(colour);
+            Reporter.show(cd, colour);
+            Intersection.farben.set(cd.ordinal(), colour); // 2 parameters, index, new value
+
+
+
+            if (colour == Colour.RED && Intersection.farben.get(dir.ordinal()) == Colour.RED) {
+              Intersection.sharedDirection = CardinalDirection.next(Intersection.sharedDirection);
+            }
+            Intersection.sem.release();
+
+          }
+
+        }
+
+        Thread.sleep(100); //testing
+
       } catch (InterruptedException e) {
+        // TODO Auto-generated catch block
         e.printStackTrace();
       }
-      light = next(light);
-      Reporter.show(cd, light);
     }
+
   }
 
-  /**
-   * Informs the traffic light to halt its operation. This information is recorded in a variable
-   * shared by all traffic lights. Therefore all traffic lights will halt after one traffic light
-   * has been informed to halt.
-   */
   public void halt() {
-
+    running = false;
   }
 }
