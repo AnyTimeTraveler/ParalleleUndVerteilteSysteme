@@ -62,21 +62,30 @@ public class TrafficLight extends Thread {
   public void run() {
     while (running) {
       if (state == RED) {
+        // du bist rot, also musst du auf der erlaubten axe liegen, damit du weiter schalten darfst
         synchronized (lock) {
+          // cycle trackt, ob du schon einmal durch gruen und gelb gelaufen bist
           if (locationOnAxis() && cycle[cd.ordinal()] == CAN_RUN) {
             cycle[cd.ordinal()] = RUNNING;
             nextState();
           }
         }
       } else {
+        // du bist nicht rot, also darfst du in den naechsten Zustand
         nextState();
 
         if (state == RED) {
+          // falls du auf rot gewechselt hast, checke ob du der letzte bist, der auf rot wechselt
           synchronized (lock) {
             cycle[cd.ordinal()] = ENDED;
             if (noneRunning()) {
+              // du bist als letzes auf rot gewechselt
+              // (alle ampeln sind auf rot und haben nicht mehr vor, von rot weg zu wechseln)
+
               dir = CardinalDirection.next(dir);
+              // resette das cycle array
               Arrays.fill(cycle, CAN_RUN);
+              // neue Zeile, da es die uebersiche erhoeht
               System.out.println();
             }
           }
@@ -85,11 +94,17 @@ public class TrafficLight extends Thread {
     }
   }
 
+  /**
+   * Sets next state and reports it.
+   */
   private void nextState() {
     state = next(state);
     Reporter.show(cd, state);
   }
 
+  /**
+   * Checks if no more TrafficLights are in the running state.
+   */
   private boolean noneRunning() {
     for (Cycle c : cycle) {
       if (c == RUNNING) {
@@ -99,6 +114,9 @@ public class TrafficLight extends Thread {
     return true;
   }
 
+  /**
+   * Checks if cd is on the axis of dir.
+   */
   private boolean locationOnAxis() {
     return cd == dir || cd == opposite(dir);
   }
