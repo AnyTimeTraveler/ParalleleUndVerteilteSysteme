@@ -19,6 +19,8 @@ package pds.trafficlight;
  */
 public class Reporter {
 
+  static int i = 0;
+
   /**
    * Shows the cardinal direction and the colour of a traffic light.
    *
@@ -26,8 +28,12 @@ public class Reporter {
    * @param c   the colour
    */
   public static void show(final CardinalDirection cd, final Colour c) {
-    Gui.updateLight(cd, c);
+//    Gui.updateLight(cd, c);
     msg(cd + ":\t" + c);
+    i++;
+    if (i >= 100){
+      System.exit(0);
+    }
   }
 
   /**

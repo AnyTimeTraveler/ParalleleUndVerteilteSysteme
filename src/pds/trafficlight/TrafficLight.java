@@ -1,5 +1,6 @@
 package pds.trafficlight;
 
+import static pds.trafficlight.CardinalDirection.NORTH;
 import static pds.trafficlight.CardinalDirection.opposite;
 import static pds.trafficlight.Colour.GREEN;
 import static pds.trafficlight.Colour.RED;
@@ -12,9 +13,10 @@ import static pds.trafficlight.Colour.RED;
  */
 public class TrafficLight extends Thread {
 
-  private static boolean running = true;
-  private static final Colour[] state = new Colour[4];
+  private static volatile boolean running = true;
+  private static volatile CardinalDirection nextColour = NORTH;
   private static final Object lock = new Object();
+  private Colour state = RED;
   private final CardinalDirection locationDir;
   private final CardinalDirection startAxis;
 
@@ -30,16 +32,7 @@ public class TrafficLight extends Thread {
     this.locationDir = cd;
     running = true;
 
-    setLightState(locationDir, RED);
     Reporter.show(locationDir, RED);
-  }
-
-  private static Colour getLightState(CardinalDirection dir) {
-    return state[dir.ordinal()];
-  }
-
-  private static void setLightState(CardinalDirection dir, Colour colour) {
-    state[dir.ordinal()] = colour;
   }
 
   /**
@@ -58,7 +51,7 @@ public class TrafficLight extends Thread {
   public void run() {
     synchronized (lock) {
       if (locationDir == startAxis || locationDir == opposite(startAxis)) {
-        setLightState(locationDir, GREEN);
+        state = GREEN;
         Reporter.show(locationDir, GREEN);
       }
     }
@@ -71,12 +64,13 @@ public class TrafficLight extends Thread {
           if (getLightState(CardinalDirection.next(locationDir)) == RED
               && getLightState(CardinalDirection.next(opposite(locationDir))) == RED) {
             setLightState(locationDir, GREEN);
+            Reporter.show(locationDir, getLightState(locationDir));
           }
         } else {
           setLightState(locationDir, Colour.next(current));
+          Reporter.show(locationDir, getLightState(locationDir));
         }
 
-        Reporter.show(locationDir, getLightState(locationDir));
       }
     }
   }

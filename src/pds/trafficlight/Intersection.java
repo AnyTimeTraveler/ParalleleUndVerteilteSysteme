@@ -19,7 +19,7 @@ public class Intersection {
    * @param args not used
    */
   public static void main(String[] args) {
-    SwingUtilities.invokeLater(new Gui());
+//    SwingUtilities.invokeLater(new Gui());
     start();
   }
 
@@ -32,8 +32,10 @@ public class Intersection {
 
     for (int i = 0; i < 4; i++) {
       lights[i] = new TrafficLight(dir, startDirection);
-      lights[i].start();
       dir = next(dir);
+    }
+    for (int i = 0; i < 4; i++) {
+      lights[i].start();
     }
   }
 
