@@ -121,7 +121,7 @@ public class TrafficLight extends Thread {
   /**
    * Checks if cd is on the axis of dir.
    *
-   * @return true if {cd} is equal or opposite to dir, false otherwise
+   * @return true if cd is equal or opposite to dir, false otherwise
    */
   private boolean locationOnAxis() {
     return cd == dir || cd == opposite(dir);
