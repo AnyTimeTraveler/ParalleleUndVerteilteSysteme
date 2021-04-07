@@ -105,7 +105,9 @@ public class TrafficLight extends Thread {
   }
 
   /**
-   * Checks if no more TrafficLights are in the running state.
+   * Checks if all TrafficLights are in the ENDED state.
+   *
+   * @return true if all TrafficLights are in ended state, false otherwise
    */
   private boolean allEnded() {
     for (Cycle c : cycle) {
@@ -118,6 +120,8 @@ public class TrafficLight extends Thread {
 
   /**
    * Checks if cd is on the axis of dir.
+   *
+   * @return true if {cd} is equal or opposite to dir, false otherwise
    */
   private boolean locationOnAxis() {
     return cd == dir || cd == opposite(dir);
