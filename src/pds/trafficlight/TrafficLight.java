@@ -68,6 +68,8 @@ public class TrafficLight extends Thread {
           if (locationOnAxis() && cycle[cd.ordinal()] == CAN_RUN) {
             cycle[cd.ordinal()] = RUNNING;
             nextState();
+          } else {
+            cycle[cd.ordinal()] = ENDED;
           }
         }
       } else {
@@ -78,7 +80,7 @@ public class TrafficLight extends Thread {
           // falls du auf rot gewechselt hast, checke ob du der letzte bist, der auf rot wechselt
           synchronized (lock) {
             cycle[cd.ordinal()] = ENDED;
-            if (noneRunning()) {
+            if (allEnded()) {
               // du bist als letzes auf rot gewechselt
               // (alle ampeln sind auf rot und haben nicht mehr vor, von rot weg zu wechseln)
 
@@ -105,9 +107,9 @@ public class TrafficLight extends Thread {
   /**
    * Checks if no more TrafficLights are in the running state.
    */
-  private boolean noneRunning() {
+  private boolean allEnded() {
     for (Cycle c : cycle) {
-      if (c == RUNNING) {
+      if (c != ENDED) {
         return false;
       }
     }
