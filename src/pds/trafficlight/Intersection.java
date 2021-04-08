@@ -16,7 +16,7 @@ public class Intersection {
    *
    * @param args not used
    */
-  public static void main(String[] args) throws InterruptedException {
+  public static void main(String[] args) {
     final CardinalDirection startDirection = NORTH;
     CardinalDirection dir = startDirection;
 
@@ -28,7 +28,6 @@ public class Intersection {
     for (int i = 0; i < 4; i++) {
       lights[i].start();
     }
-    Thread.sleep(5);
-    lights[0].halt();
+    // lights[0].halt();
   }
 }

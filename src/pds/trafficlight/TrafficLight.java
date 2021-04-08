@@ -25,10 +25,11 @@ public class TrafficLight extends Thread {
 
   private static volatile boolean running = true;
   private static volatile CardinalDirection dir;
-  private static final Cycle[] cycle = new Cycle[CardinalDirection.cardinality];
+  @SuppressWarnings("FieldMayBeFinal")
+  private static volatile Cycle[] cycle = new Cycle[CardinalDirection.values().length];
   private static final Object lock = new Object();
-  private Colour state;
   private final CardinalDirection cd;
+  private Colour state;
 
   /**
    * Basic constructor of the traffic light.
@@ -62,33 +63,37 @@ public class TrafficLight extends Thread {
   public void run() {
     while (running) {
       if (state == RED) {
-        // du bist rot, also musst du auf der erlaubten axe liegen, damit du weiter schalten darfst
         synchronized (lock) {
-          // cycle trackt, ob du schon einmal durch gruen und gelb gelaufen bist
+          // Light is red
           if (locationOnAxis() && cycle[cd.ordinal()] == CAN_RUN) {
+            // if light is on the active axis and hasn't run yet, set its state to running
             cycle[cd.ordinal()] = RUNNING;
+            // switch to and report next state (green)
             nextState();
           } else {
+            // otherwise mark as ended
             cycle[cd.ordinal()] = ENDED;
           }
         }
       } else {
-        // du bist nicht rot, also darfst du in den naechsten Zustand
+        // if light is not red, you have to be on the active axis
+        // so you can switch to the next state
         nextState();
 
+        // if you just switched to red, mark your cycle as ended
         if (state == RED) {
-          // falls du auf rot gewechselt hast, checke ob du der letzte bist, der auf rot wechselt
           synchronized (lock) {
             cycle[cd.ordinal()] = ENDED;
             if (allEnded()) {
-              // du bist als letzes auf rot gewechselt
-              // (alle ampeln sind auf rot und haben nicht mehr vor, von rot weg zu wechseln)
+              // if all TrafficLights have marked their cycle as ended,
+              // then you are the the last traffic light to do so,
+              // as this happens in a synchronized block
 
+              // update the active axis
               dir = CardinalDirection.next(dir);
-              // resette das cycle array
+
+              // reset the states of all TrafficLights
               Arrays.fill(cycle, CAN_RUN);
-              // neue Zeile, da es die uebersiche erhoeht
-              System.out.println();
             }
           }
         }
