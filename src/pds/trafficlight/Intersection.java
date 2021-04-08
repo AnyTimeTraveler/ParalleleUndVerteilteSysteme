@@ -22,11 +22,8 @@ public class Intersection {
 
     for (int i = 0; i < 4; i++) {
       lights[i] = new TrafficLight(dir, startDirection);
-      dir = next(dir);
-    }
-    System.out.println();
-    for (int i = 0; i < 4; i++) {
       lights[i].start();
+      dir = next(dir);
     }
     // lights[0].halt();
   }
