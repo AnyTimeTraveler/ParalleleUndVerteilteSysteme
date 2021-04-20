@@ -2,10 +2,10 @@ package pds.trafficlight;
 
 import static pds.trafficlight.CardinalDirection.opposite;
 import static pds.trafficlight.Colour.RED;
+import static pds.trafficlight.Colour.YELLOW;
 import static pds.trafficlight.Colour.next;
 import static pds.trafficlight.TrafficLight.Cycle.CAN_RUN;
 import static pds.trafficlight.TrafficLight.Cycle.ENDED;
-import static pds.trafficlight.TrafficLight.Cycle.RUNNING;
 
 import java.util.Arrays;
 
@@ -19,7 +19,8 @@ public class TrafficLight extends Thread {
 
   enum Cycle {
     CAN_RUN,
-    RUNNING,
+    GREEN,
+    YELLOW,
     ENDED,
   }
 
@@ -43,7 +44,6 @@ public class TrafficLight extends Thread {
     this.cd = cd;
     running = true;
     state = RED;
-    Reporter.show(cd, RED);
     cycle[cd.ordinal()] = CAN_RUN;
   }
 
@@ -61,13 +61,14 @@ public class TrafficLight extends Thread {
    */
   @Override
   public void run() {
+    Reporter.show(cd, state);
     while (running) {
       if (state == RED) {
         synchronized (lock) {
           // Light is red
           if (locationOnAxis() && cycle[cd.ordinal()] == CAN_RUN) {
             // if light is on the active axis and hasn't run yet, set its state to running
-            cycle[cd.ordinal()] = RUNNING;
+            cycle[cd.ordinal()] = Cycle.GREEN;
             // switch to and report next state (green)
             nextState();
           } else {
@@ -75,14 +76,19 @@ public class TrafficLight extends Thread {
             cycle[cd.ordinal()] = ENDED;
           }
         }
-      } else {
-        // if light is not red, you have to be on the active axis
-        // so you can switch to the next state
-        nextState();
-
-        // if you just switched to red, mark your cycle as ended
-        if (state == RED) {
-          synchronized (lock) {
+      } else if (state == Colour.GREEN) {
+        synchronized (lock) {
+          if (cycle[opposite(cd).ordinal()] == Cycle.GREEN
+              || cycle[opposite(cd).ordinal()] == Cycle.YELLOW) {
+            nextState();
+            cycle[cd.ordinal()] = Cycle.YELLOW;
+          }
+        }
+      } else if (state == YELLOW) {
+        synchronized (lock) {
+          if (cycle[opposite(cd).ordinal()] == Cycle.YELLOW
+              || cycle[opposite(cd).ordinal()] == ENDED) {
+            nextState();
             cycle[cd.ordinal()] = ENDED;
             if (allEnded()) {
               // if all TrafficLights have marked their cycle as ended,
