@@ -1,0 +1,45 @@
+%
+% Functional.mcrl2
+%
+% Simple examples of functional data types.
+%
+% Copyright (c) 2019-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.00 - 05 Apr 2019 - GJV - initial version 
+% @version 1.10 - 01 Apr 2020 - GJV - small changes in layout & comments 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+%
+% using the functional aspects of mCRL2
+%
+
+map
+	square : Nat -> Nat;
+	double : Nat -> Nat;
+
+eqn
+	square = lambda n:Nat. n * n;
+	double = lambda n:Nat. n + n;
+
+% --- testing the implementation
+
+map
+	test1, test2, test3, test4 : Nat;
+	fnArg : (Nat -> Nat) # Nat -> Nat;
+
+var
+	function : Nat -> Nat;
+	argument : Nat;
+
+eqn
+	test1 = square(4);
+	test2 = (lambda n:Nat. n * n)(3);
+	fnArg(function, argument) = function(argument);
+	test3 = fnArg(square, 5);
+	test4 = fnArg(double, 5);
+
+	

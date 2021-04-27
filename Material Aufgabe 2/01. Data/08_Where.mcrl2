@@ -1,0 +1,35 @@
+%
+% Where.mcrl2
+%
+% A simple example showing how the use of 'where'.
+%
+% Copyright (c) 2019-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.00 - 22 Apr 2019 - GJV - initial version 
+% @version 1.10 - 01 Apr 2020 - GJV - small changes in layout & comments
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+map
+	square : Nat -> Nat;
+	sumSquares : Nat -> Nat;
+
+var
+	n : Nat;
+
+eqn
+	square(n) = n * n;
+	sumSquares(n) = m + m
+		whr m = square(n) end; 
+	
+% testing the data structure
+map
+	test1, test2: Nat;
+	
+eqn
+	test1 = square(3);
+	test2 = sumSquares(3);
+	

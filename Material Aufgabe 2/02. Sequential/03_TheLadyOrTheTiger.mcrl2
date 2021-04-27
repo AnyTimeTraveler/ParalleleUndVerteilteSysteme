@@ -1,0 +1,45 @@
+%
+% TheLadyOrTheTiger.mcrl2
+%
+% The classic example showing the difference in moment of choice.
+% This version includes successful termination after marrying
+% and deadlock after being eaten.
+%
+% Copyright (c) 2015-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.30 - 04 Apr 2020 - GJV - small changes in layout & comments 
+% @version 1.20 - 09 Apr 2019 - GJV - updates cs course 
+% @version 1.10 - 05 May 2016 - GJV - updates sommer course 2016 
+% @version 1.00 - 11 Nov 2015 - GJV - initial version 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+%
+% Definition of the actions
+%
+act
+	open;          	% open a door	
+	eaten;            	% prisoner gets eaten by the tiger
+	marry;          	% prisoner marries the lady	
+
+%
+% Definition of the processes
+%
+proc
+	CorrectMomentOfChoice =                      		% open one of two doors
+		 open . marry + open . eaten . delta		% the lady or(!) the tiger
+	;	
+
+	IncorrectMomentOfChoice =                           	% open a door, then choose
+		open . (marry + eaten . delta)
+	;	
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+init
+    CorrectMomentOfChoice
+%    IncorrectMomentOfChoice
+;

@@ -1,0 +1,48 @@
+%
+% Define_Order.mcrl2
+%
+% A simple example showing how to define order for a sort.
+%
+% Copyright (c) 2019-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.00 - 22 Apr 2019 - GJV - initial version 
+% @version 1.10 - 01 Apr 2020 - GJV - small changes in layout & comments 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+% Colour definition starts here
+
+sort
+	Colour;
+
+cons
+	red, green, blue : Colour;
+
+var
+	c, c1, c2 : Colour;
+
+eqn
+	% first define order
+	red <= c  = true;
+	c <= blue = true;
+	green <= red = false;
+	blue <= red = false;
+	blue <= green = false;
+
+	% then use 'smart' equations to define equality and total order
+	c1 == c2  =  (c1 <= c2) && (c2 <= c1);
+ 	c1 < c2 = (c1 <= c2) && (c1 != c2);
+
+% testing the data structure
+map
+	test1, test2, test3, test4: Bool;
+	
+eqn
+	test1 = green <= green;
+	test2 = red < blue;
+	test3 = green == blue;
+	test4 = !(green >= blue);
+	

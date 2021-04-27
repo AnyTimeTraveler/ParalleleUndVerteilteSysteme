@@ -1,0 +1,8 @@
+cross({goat, farmer}, right)
+cross({farmer}, left)
+cross({wolf, farmer}, right)
+cross({goat, farmer}, left)
+cross({cabbage, farmer}, right)
+cross({farmer}, left)
+cross({goat, farmer}, right)
+success

@@ -1,0 +1,45 @@
+%
+% Array.mcrl2
+%
+% Array as a simple example of functional data types (update function).
+%
+% Copyright (c) 2019-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.00 - 05 Apr 2019 - GJV - initial version 
+% @version 1.10 - 01 Apr 2020 - GJV - small changes in layout & comments 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+% Array definition starts here
+
+sort
+	Array = Nat -> D;				% sort D symbolizes a "generic" sort, that has to be instantiated later
+
+map
+	_Array: D -> Array;				% _Array symbolizes the Array constructor,
+								% the D element is used as default value to initialize undefined array elements
+var
+	n: Nat;
+	d: D;
+
+eqn
+	_Array(d)(n) = d;				% initializes array with the given default value (catch-all function)
+
+
+% testing the data structure
+
+% D symbolizes a "generic" sort, that gets instantiated here
+sort
+	D = Int;
+
+map
+	test1: Array;
+    	test2, test3: Int;
+	
+eqn
+	test1 = _Array(0)[3 -> 4][4 -> 5][5 -> 6];	% default value: 0!
+    	test2 = test1(4);
+    	test3 = test1(1);

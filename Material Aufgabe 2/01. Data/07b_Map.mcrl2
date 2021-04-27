@@ -1,0 +1,49 @@
+%
+% Map.mcrl2
+%
+% Map (associative data structure) as a simple example of functional data types (update function).
+%
+% Copyright (c) 2019-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.00 - 05 Apr 2019 - GJV - initial version 
+% @version 1.10 - 01 Apr 2020 - GJV - small changes in layout & comments 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+% Map definition starts here
+
+sort
+	Map = K -> V;							% sorts K symbolizes a "generic" Key sort and V symbolizes a "generic" Value sort, that have to be instantiated later
+
+map
+	_Map: V -> Map;						% _Map symbolizes the Map constructor, the V element is used as default value to initialize undefined map entries
+
+var
+	k: K;
+	v: V;
+
+eqn
+	_Map(v)(k) = v;						% initializes the map with the given default value (catch-all function)
+
+
+% testing the data structure
+sort
+	Product = struct tea | coffee | cake | apple;
+
+% K symbolizes the "generic" Key sort and V symbolizes the "generic" Value sort, that both get instantiated here
+sort
+	K = Product;
+	V = Int;
+
+map
+	price: Map;
+	test1, test2, test3 : Int;
+	
+eqn
+	price = _Map(-1)[tea -> 10][coffee -> 25][cake -> 60];		% -1 symbolizes the default (not used/nil) value
+	test1 = price(coffee);
+	test2 = price(cake);
+ 	test3 = price(apple);

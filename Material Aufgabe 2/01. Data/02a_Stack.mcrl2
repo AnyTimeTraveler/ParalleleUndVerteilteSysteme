@@ -1,0 +1,61 @@
+%
+% Stack.mcrl2
+%
+% Simple example of a stack.
+%
+% Copyright (c) 2018-2020
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.00 - 01 Oct 2018 - GJV - initial version 
+% @version 1.10 - 01 Apr 2020 - GJV - small changes in layout & comments 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+% --- definition of the data elements
+sort
+	Data;
+
+cons	
+	a, b, c : Data;			% a number of data elements
+	nil : Data;				% 'nil' is a special data element
+							
+% --- definition of the stack
+sort
+	Stack;
+
+cons
+	empty : Stack;				% an empty stack
+	p : Data # Stack -> Stack;	% 'p' is the short constructor form of 'push'
+
+map
+	push : Data # Stack -> Stack;		% adds an element on top of the stack
+	top : Stack -> Data;			% returns the top element of the stack
+	pop : Stack -> Stack;			% returns the stack without its top element
+
+var
+	s : Stack;
+	d : Data;
+
+eqn
+	push(d, s) = p(d, s);			% use 'p' as constructor
+
+	pop(p(d, s)) = s;				% return the stack 's' without top element 'd'
+	pop(empty) = empty;			% an already empty stack does not get smaller
+
+	top(p(d, s)) = d;				% return the top element 'd'
+	top(empty) = nil;				% the top element of an empty stack does not exist! use the special value 'nil'
+
+% --- tests ---
+
+map
+	s1, s2 : Stack;
+	d1, d2 : Data;
+
+eqn
+	s1 = push(a,push(b,empty));
+	s2 = pop(s1);
+	d1 = top(s1);
+	d2 = top(s2);
+		 

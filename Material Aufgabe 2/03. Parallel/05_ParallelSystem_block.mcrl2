@@ -1,0 +1,70 @@
+%
+% ParallelSystem_block.mcrl2
+%
+% A simple coffee machine and a customer showing basic communication
+% using block to force communication.
+%
+% Copyright (c) 2015-2019 HS Emden-Leer
+% All Rights Reserved.
+%
+% @version 1.20 - 03 Apr 2019 - GJV - updates sommer course 2019 
+% @version 1.10 - 10 June 2016 - GJV - updates sommer course 2016 
+% @version 1.00 - 11 Nov 2015 - GJV - initial version 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+act
+	empty;
+
+%
+% Definition of the coffee machine
+%
+act
+	accept_quarter;     % receive a quarter from the customer	
+	serve_coffee;       % machine serves a cup of coffee
+
+proc
+	SCM =                           
+		accept_quarter . serve_coffee
+	;	
+
+%
+% Definition of the customer
+%
+act
+	insert_quarter;     % put a quarter in the vending machine	
+	take_coffee;       	% take the coffee from the machine
+
+proc
+	CC =                           
+		insert_quarter . take_coffee
+	;	
+
+%
+% Definition of the system containing a coffee machine and one customer
+%
+act
+	quarter_received;  	% quarter has been transferred	
+	coffee_taken;       % coffee has been taken from the machine
+
+proc
+	System =
+		block({
+			insert_quarter, accept_quarter, serve_coffee, take_coffee  % block 'parts' of the communication to happen by themselves
+		},
+		comm({
+			insert_quarter | accept_quarter -> quarter_received,
+			serve_coffee | take_coffee -> coffee_taken
+		},
+			SCM || CC
+		)
+		)
+	;
+
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+init
+    System
+;

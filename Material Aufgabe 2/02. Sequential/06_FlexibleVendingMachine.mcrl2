@@ -1,0 +1,40 @@
+%
+% FlexibleVendingMachine.mcrl2
+%
+% A simple example of a vending machine parameterized with a price list,
+% also showcasing the use of sum.
+%
+% Copyright (c) 2020-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.00 - 04 Apr 2020 - GJV - initial version 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+sort
+	Product = struct tea | coffee | cake | apple;
+	Coin = struct _10c | _20c | _50c | _1Euro;
+	PriceList = Coin -> Product;	
+
+map
+	emptyPriceList : PriceList;
+		
+%
+% Definition of the actions
+%
+act
+	coin : Coin;
+	serve : Product;
+
+proc
+	FVM(p : PriceList) =
+		sum c : Coin. coin(c) . serve(p(c)) . FVM(p)
+	; 
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+init
+    FVM(emptyPriceList[_10c->tea][_20c->coffee][_50c->apple][_1Euro->cake])		% initialize with a price list
+;

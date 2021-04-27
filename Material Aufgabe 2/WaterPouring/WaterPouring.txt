@@ -1,0 +1,7 @@
+pour(A, 5, B)
+pour(B, 3, C)
+pour(C, 3, A)
+pour(B, 2, C)
+pour(A, 5, B)
+pour(B, 1, C)
+done(B)

@@ -1,0 +1,28 @@
+%
+% SimpleMerge.mcrl2
+%
+% A simple example of a merge (parallel composition).
+%
+% Copyright (c) 2015-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.00 - 03 Apr 2015 - GJV - initial version 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+%
+% Definition of general actions
+%
+act
+	a, b, c, d;
+
+proc 
+	System = a . b || c . d;  	
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+init
+		System
+;

@@ -1,0 +1,46 @@
+%
+% ReactiveVendingMachine.mcrl2
+%
+% A very simple vending machine that decides the product to serve based on the coin inserted.
+% This example shows the use of conditions.
+%
+% Copyright (c) 2019-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.10 - 04 Apr 2020 - GJV - small changes in layout & comments 
+% @version 1.00 - 09 Apr 2019 - GJV - initial version 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+%
+% Definition of coins and drinks
+%
+sort
+	Coin = struct dime?isDime | quarter?isQuarter;
+	Drink = struct tea | coffee;
+
+%
+% Definition of the actions
+%
+act
+	accept: Coin;	 % accept a coin put into the vending machine	
+	serve: Drink;	 % serve the drink implicitly ordered
+
+%
+% Definition of the processes
+%
+proc
+	RVM =        
+		sum c : Coin. accept(c) . (
+ 			isDime(c) -> serve(tea)
+			<> isQuarter(c) -> serve(coffee)
+		) . RVM
+	;	
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+init
+    RVM
+;
