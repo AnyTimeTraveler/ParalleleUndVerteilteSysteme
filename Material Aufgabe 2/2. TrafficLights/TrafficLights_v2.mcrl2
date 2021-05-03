@@ -44,6 +44,9 @@ eqn
     next(red) = green;
     next(green) = yellow;
     next(yellow) = red;
+
+sort 
+	intersectionUnsafe = Bool; 
     
 % -----------------------------------------------------------------------------------------------------------------------
 
@@ -68,6 +71,25 @@ proc
 % -----------------------------------------------------------------------------------------------------------------------
 
 %
+act
+	show : intersectionUnsafe # Colour # Colour # Colour # Colour;
+	return: intersectionUnsafe;
+	stop : bool
+
+poc 
+	
+	Monitor =  show();
+	
+	show(cnorth : Colour, csouth : Colour, ceast : Colour,cwest : Colour)=
+		((cnorth == green . csouth == red . ceast == green . cwest == red) -> return(false))<> 
+		((cnorth == green . csouth == red . ceast == green . cwest == green) -> return(false))<>
+		((cnorth == red . csouth == green . ceast == green . cwest == red) -> return(false))<>
+		((cnorth == red . csouth == green . ceast == red . cwest == green) -> return(false))<>
+		return(true)
+		;
+
+	stop(show)
+
 % Definition of a intersection with four traffic lights
 %
 
