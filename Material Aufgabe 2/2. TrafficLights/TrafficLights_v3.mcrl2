@@ -53,7 +53,6 @@ eqn
 
 act
     show : CardinalDirection # Colour;  % the given traffic light shows the given colour
-    waitForAxis : Axis;
     
 proc
     TrafficLight(d : CardinalDirection, startAxis : Axis) =
@@ -64,21 +63,66 @@ proc
     TrafficLight(d : CardinalDirection, c : Colour) =
         % show light, if it is red, handover control and get it back, otherwise synchronize, finally continue with next colour          
 		show(d, c) . TrafficLight(d, next(c));
-        
+
+
 % -----------------------------------------------------------------------------------------------------------------------
 
-%
-% Definition of a intersection with four traffic lights
+% Map definition starts here
+
+sort
+	Map = CardinalDirection -> Colour;							% sorts K symbolizes a "generic" Key sort and V symbolizes a "generic" Value sort, that have to be instantiated later
+
+map
+	_Map: Colour -> Map;						% _Map symbolizes the Map constructor, the V element is used as default value to initialize undefined map entries
+	start: Map;
+var
+	k: CardinalDirection;
+	v: Colour;
+
+eqn
+	_Map(v)(k) = v;						% initializes the map with the given default value (catch-all function)
+
+        
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+
+
 %
 
-%act
-    %...
+map
+	isCrossingSafe: Map -> Bool;
+
+var
+	c : Map;
+eqn
+	isCrossingSafe(c) = (c(north) == red && c(south) == red) || (c(west) == red && c(east) == red);
+
+act
+	seeColour: CardinalDirection # Colour;
+	colourSeen : CardinalDirection # Colour;
+	crossingUnsafe: Colour # Colour # Colour # Colour;
+
+proc
+	Monitor(crossing: Map) = 
+		sum cd : CardinalDirection . (
+			sum col : Colour . (
+				isCrossingSafe(crossing[cd -> col]) -> seeColour(cd, col) . Monitor(crossing[cd -> col])
+			)
+		);
+
     
-proc 
-                    
-    Intersection =    TrafficLight(north, nsAxis) || TrafficLight(east, nsAxis) || TrafficLight(south, nsAxis) || TrafficLight(west, nsAxis)
-        
-    ;
+proc
+    Intersection =
+		allow({
+			colourSeen,
+			crossingUnsafe
+		},
+		comm({
+			show | seeColour -> colourSeen
+		},
+			TrafficLight(north, nsAxis) || TrafficLight(east, nsAxis) || TrafficLight(south, nsAxis) || TrafficLight(west, nsAxis) || Monitor(_Map(red))
+        ));
 
 % -----------------------------------------------------------------------------------------------------------------------
 init
