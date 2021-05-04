@@ -44,14 +44,6 @@ eqn
     next(red) = green;
     next(green) = yellow;
     next(yellow) = red;
-
-
-
-
-
-
-sort 
-	intersectionUnsafe = Bool; 
     
 % -----------------------------------------------------------------------------------------------------------------------
 
@@ -61,7 +53,6 @@ sort
 
 act
     show : CardinalDirection # Colour;  % the given traffic light shows the given colour
-    waitForAxis : Axis;
     
 proc
     TrafficLight(d : CardinalDirection, startAxis : Axis) =
@@ -79,47 +70,126 @@ proc
 % Map definition starts here
 
 sort
-	Map = K -> V;							% sorts K symbolizes a "generic" Key sort and V symbolizes a "generic" Value sort, that have to be instantiated later
+	Map = CardinalDirection -> Colour;							% sorts K symbolizes a "generic" Key sort and V symbolizes a "generic" Value sort, that have to be instantiated later
 
 map
-	_Map: V -> Map;						% _Map symbolizes the Map constructor, the V element is used as default value to initialize undefined map entries
-
+	_Map: Colour -> Map;						% _Map symbolizes the Map constructor, the V element is used as default value to initialize undefined map entries
+	start: Map;
 var
-	k: K;
-	v: V;
+	k: CardinalDirection;
+	v: Colour;
 
 eqn
 	_Map(v)(k) = v;						% initializes the map with the given default value (catch-all function)
 
         
+
 % -----------------------------------------------------------------------------------------------------------------------
 
 
 
 %
 
-sort
-	K = CardinalDirection;
-	V = Colour;
+map
+	isCrossingUnsafe: Colour # Colour # Colour # Colour-> Bool;
+eqn
+	isCrossingUnsafe(red, red, red, red) = false;
+	isCrossingUnsafe(red, red, yellow, red) = false;
+	isCrossingUnsafe(red, red, green, red) = false;
+	isCrossingUnsafe(red, red, red, yellow) = false;
+	isCrossingUnsafe(red, red, yellow, yellow) = true;
+	isCrossingUnsafe(red, red, green, yellow) = true;
+	isCrossingUnsafe(red, red, red, green) = false;
+	isCrossingUnsafe(red, red, yellow, green) = true;
+	isCrossingUnsafe(red, red, green, green) = true;
+	isCrossingUnsafe(red, yellow, red, red) = false;
+	isCrossingUnsafe(red, yellow, yellow, red) = true;
+	isCrossingUnsafe(red, yellow, green, red) = true;
+	isCrossingUnsafe(red, yellow, red, yellow) = false;
+	isCrossingUnsafe(red, yellow, yellow, yellow) = true;
+	isCrossingUnsafe(red, yellow, green, yellow) = true;
+	isCrossingUnsafe(red, yellow, red, green) = false;
+	isCrossingUnsafe(red, yellow, yellow, green) = true;
+	isCrossingUnsafe(red, yellow, green, green) = true;
+	isCrossingUnsafe(red, green, red, red) = false;
+	isCrossingUnsafe(red, green, yellow, red) = true;
+	isCrossingUnsafe(red, green, green, red) = true;
+	isCrossingUnsafe(red, green, red, yellow) = false;
+	isCrossingUnsafe(red, green, yellow, yellow) = true;
+	isCrossingUnsafe(red, green, green, yellow) = true;
+	isCrossingUnsafe(red, green, red, green) = false;
+	isCrossingUnsafe(red, green, yellow, green) = true;
+	isCrossingUnsafe(red, green, green, green) = true;
+	isCrossingUnsafe(yellow, red, red, red) = false;
+	isCrossingUnsafe(yellow, red, yellow, red) = false;
+	isCrossingUnsafe(yellow, red, green, red) = false;
+	isCrossingUnsafe(yellow, red, red, yellow) = true;
+	isCrossingUnsafe(yellow, red, yellow, yellow) = true;
+	isCrossingUnsafe(yellow, red, green, yellow) = true;
+	isCrossingUnsafe(yellow, red, red, green) = true;
+	isCrossingUnsafe(yellow, red, yellow, green) = true;
+	isCrossingUnsafe(yellow, red, green, green) = true;
+	isCrossingUnsafe(yellow, yellow, red, red) = true;
+	isCrossingUnsafe(yellow, yellow, yellow, red) = true;
+	isCrossingUnsafe(yellow, yellow, green, red) = true;
+	isCrossingUnsafe(yellow, yellow, red, yellow) = true;
+	isCrossingUnsafe(yellow, yellow, yellow, yellow) = true;
+	isCrossingUnsafe(yellow, yellow, green, yellow) = true;
+	isCrossingUnsafe(yellow, yellow, red, green) = true;
+	isCrossingUnsafe(yellow, yellow, yellow, green) = true;
+	isCrossingUnsafe(yellow, yellow, green, green) = true;
+	isCrossingUnsafe(yellow, green, red, red) = true;
+	isCrossingUnsafe(yellow, green, yellow, red) = true;
+	isCrossingUnsafe(yellow, green, green, red) = true;
+	isCrossingUnsafe(yellow, green, red, yellow) = true;
+	isCrossingUnsafe(yellow, green, yellow, yellow) = true;
+	isCrossingUnsafe(yellow, green, green, yellow) = true;
+	isCrossingUnsafe(yellow, green, red, green) = true;
+	isCrossingUnsafe(yellow, green, yellow, green) = true;
+	isCrossingUnsafe(yellow, green, green, green) = true;
+	isCrossingUnsafe(green, red, red, red) = false;
+	isCrossingUnsafe(green, red, yellow, red) = false;
+	isCrossingUnsafe(green, red, green, red) = false;
+	isCrossingUnsafe(green, red, red, yellow) = true;
+	isCrossingUnsafe(green, red, yellow, yellow) = true;
+	isCrossingUnsafe(green, red, green, yellow) = true;
+	isCrossingUnsafe(green, red, red, green) = true;
+	isCrossingUnsafe(green, red, yellow, green) = true;
+	isCrossingUnsafe(green, red, green, green) = true;
+	isCrossingUnsafe(green, yellow, red, red) = true;
+	isCrossingUnsafe(green, yellow, yellow, red) = true;
+	isCrossingUnsafe(green, yellow, green, red) = true;
+	isCrossingUnsafe(green, yellow, red, yellow) = true;
+	isCrossingUnsafe(green, yellow, yellow, yellow) = true;
+	isCrossingUnsafe(green, yellow, green, yellow) = true;
+	isCrossingUnsafe(green, yellow, red, green) = true;
+	isCrossingUnsafe(green, yellow, yellow, green) = true;
+	isCrossingUnsafe(green, yellow, green, green) = true;
+	isCrossingUnsafe(green, green, red, red) = true;
+	isCrossingUnsafe(green, green, yellow, red) = true;
+	isCrossingUnsafe(green, green, green, red) = true;
+	isCrossingUnsafe(green, green, red, yellow) = true;
+	isCrossingUnsafe(green, green, yellow, yellow) = true;
+	isCrossingUnsafe(green, green, green, yellow) = true;
+	isCrossingUnsafe(green, green, red, green) = true;
+	isCrossingUnsafe(green, green, yellow, green) = true;
+	isCrossingUnsafe(green, green, green, green) = true;
 
 act
 	seeColour: CardinalDirection # Colour;
 	colourSeen : CardinalDirection # Colour;
-	return: intersectionUnsafe;
-	stop: Bool;
-	crossingUnsafe: CardinalDirection # Colour;
+	crossingUnsafe: Colour # Colour # Colour # Colour;
 
 proc
 	Monitor(crossing: Map) = 
+		(isCrossingUnsafe(crossing(north), crossing(west), crossing(south), crossing(east))) -> crossingUnsafe(crossing(north), crossing(west), crossing(south), crossing(east)) . delta
+		<>
 		sum cd : CardinalDirection . (
 			sum col : Colour . (
 				seeColour(cd, col) . Monitor(crossing[cd -> col])
 			)
-		) .
-		crossingUnsafe(north, red) . Monitor(crossing);
-	
-%act
-    %...
+		);
+
     
 proc
     Intersection =
