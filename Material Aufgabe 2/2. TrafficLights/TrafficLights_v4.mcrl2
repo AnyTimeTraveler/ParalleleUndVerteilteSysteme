@@ -53,32 +53,48 @@ eqn
 
 act
     show : CardinalDirection # Colour;  % the given traffic light shows the given colour
-    waitForAxis : Axis;
-    
+	waitForAxis: Axis;
+	releaseAxis: Axis;
+	sync;
+
 proc
     TrafficLight(d : CardinalDirection, startAxis : Axis) =
         % starting axis can continue, other axes have to wait to take over control
-		TrafficLight(d, red);
-%		show(d, red) . (axis(d) == startAxis) -> TrafficLight(d, red) <> waitForAxis(next(startAxis))
+%		TrafficLight(d, red);
+		(axis(d) == startAxis) -> TrafficLight(d, red) <> waitForAxis(startAxis) . TrafficLight(d, next(startAxis));
 
-    TrafficLight(d : CardinalDirection, c : Colour) =
+    TrafficLight(d : CardinalDirection, c: Colour) =
         % show light, if it is red, handover control and get it back, otherwise synchronize, finally continue with next colour          
-		show(d, c) . TrafficLight(d, next(c));
-        
+		(next(c) == red) -> show(d, c) . sync . show(d, next(c)) . releaseAxis(axis(d)) . TrafficLight(d, next(axis(d))) <>
+		show(d, c) . sync . TrafficLight(d, next(c));
+
 % -----------------------------------------------------------------------------------------------------------------------
 
-%
-% Definition of a intersection with four traffic lights
-%
+act
+	colourChanged;
+	axisSwap: Axis;
+	axisChanged: Axis;
 
-%act
-    %...
-    
-proc 
-                    
-    Intersection =    TrafficLight(north, nsAxis) || TrafficLight(east, nsAxis) || TrafficLight(south, nsAxis) || TrafficLight(west, nsAxis)
-        
-    ;
+proc
+    Intersection =
+		allow({
+			show,
+			colourChanged,
+			axisSwap,
+			axisChanged
+		},
+		comm({
+			sync | sync -> colourChanged,
+			waitForAxis | releaseAxis -> axisSwap,
+			axisSwap | axisSwap -> axisChanged
+		},
+%		hide({
+%			sync
+%		},
+			TrafficLight(north, nsAxis) || TrafficLight(east, nsAxis) || TrafficLight(south, nsAxis) || TrafficLight(west, nsAxis)
+%        )
+	)
+);
 
 % -----------------------------------------------------------------------------------------------------------------------
 init
