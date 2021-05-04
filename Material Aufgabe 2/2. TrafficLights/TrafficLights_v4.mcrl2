@@ -58,20 +58,15 @@ act
 	sync: Axis;
 
 proc
-    PassiveTrafficLight(d : CardinalDirection, activeAxis : Axis) =
-        % starting axis can continue, other axes have to wait to take over control
-		show(d, red) . sync(axis(d)) . (
-			(axis(d) == activeAxis) -> ActiveTrafficLight(d, next(red))
-			<>
-			becomeActive . ActiveTrafficLight(d, next(red))
-		);
+    TrafficLight(d : CardinalDirection, startAxis : Axis) =
+		% starting axis can continue, other axes have to wait to take over control
+		(axis(d) == startAxis) -> TrafficLight(d, red) <> becomeActive . TrafficLight(d, red);
 
-    ActiveTrafficLight(d : CardinalDirection, c: Colour) =
-        % show light, if it is red, handover control and get it back, otherwise synchronize, finally continue with next colour          
-		show(d, c) . sync(axis(d)) . (
-			(c == red) -> becomePassive . PassiveTrafficLight(d, next(axis(d)))
-			<>
-		 	ActiveTrafficLight(d, next(c))
+    TrafficLight(d : CardinalDirection, c: Colour) =
+		% show light, if it is red, handover control and get it back, otherwise synchronize, finally continue with next colour          
+		show(d, c) . (
+			(c == red) -> sync(axis(d)) . becomePassive . sync(axis(d)) . becomeActive . TrafficLight(d, next(c))
+			<> sync(axis(d)) . TrafficLight(d, next(c))
 		);
 
 % -----------------------------------------------------------------------------------------------------------------------
@@ -82,6 +77,10 @@ act
 
 proc
     Intersection =
+		hide({
+			colourChanged,
+			swapActiveLight
+		},
 		allow({
 			show,
 			colourChanged,
@@ -91,12 +90,8 @@ proc
 			sync | sync -> colourChanged,
 			becomeActive | becomePassive -> swapActiveLight
 		},
-%		hide({
-%			sync,
-%			axisSwap
-%		},
-			PassiveTrafficLight(north, nsAxis) || PassiveTrafficLight(east, nsAxis) || PassiveTrafficLight(south, nsAxis) || PassiveTrafficLight(west, nsAxis)
- %       )
+			TrafficLight(north, nsAxis) || TrafficLight(east, nsAxis) || TrafficLight(south, nsAxis) || TrafficLight(west, nsAxis)
+		)
 	)
 );
 
