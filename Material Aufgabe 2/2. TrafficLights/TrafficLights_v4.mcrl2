@@ -88,11 +88,12 @@ proc
 			waitForAxis | releaseAxis -> axisSwap,
 			axisSwap | axisSwap -> axisChanged
 		},
-%		hide({
-%			sync
-%		},
+		hide({
+			sync,
+			axisSwap
+		},
 			TrafficLight(north, nsAxis) || TrafficLight(east, nsAxis) || TrafficLight(south, nsAxis) || TrafficLight(west, nsAxis)
-%        )
+        )
 	)
 );
 
