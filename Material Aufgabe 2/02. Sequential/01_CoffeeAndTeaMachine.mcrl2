@@ -1,0 +1,48 @@
+%
+% CoffeeAndTeaMachine.mcrl2
+%
+% A very simple vending machine showing the use of sequential composition of processes.
+%
+% Copyright (c) 2015-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.30 - 04 Apr 2020 - GJV - small changes in layout & comments 
+% @version 1.20 - 09 Apr 2019 - GJV - updates cs course 
+% @version 1.10 - 05 May 2016 - GJV - updates sommer course 2016 
+% @version 1.00 - 11 Nov 2015 - GJV - initial version 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+%
+% Definition of the actions
+%
+act
+	quarter;		% quarter inserted into the vending machine	
+	coffee;         	% machine serves a cup of coffee
+	dime;           	% quarter inserted into the vending machine	
+	tea;            	% machine serves a cup of tea
+
+%
+% Definition of the processes
+%
+proc
+	CM =                           
+		quarter . coffee
+	;	
+
+	TM =                           
+		dime . tea
+	;	
+
+	System =                           
+		CM . TM
+	;	
+
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+init
+    System
+;

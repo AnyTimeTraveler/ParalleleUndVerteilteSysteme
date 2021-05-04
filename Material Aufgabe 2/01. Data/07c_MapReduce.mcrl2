@@ -1,0 +1,79 @@
+%
+% MapReduce.mcrl2
+%
+% Standard map reduce (fold) example for functional data types.
+%
+% Copyright (c) 2019-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.00 - 05 Apr 2019 - GJV - initial version 
+% @version 1.10 - 01 Apr 2020 - GJV - small changes in naming, layout & comments, extended with double
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+%
+% using the functional aspects of mCRL2
+%
+
+% T and U symbolize "generic" sorts, that get instantiated later
+
+% define the 'map'-function
+map
+	_map: (T -> U) # List(T) -> List(U);
+
+var
+	f : T -> U;
+	t : T;
+	l : List(T); 
+
+eqn
+	_map(f, []) = [];
+	_map(f, t |> l) = f(t) |> _map(f, l);
+
+
+% define the 'reduce'-function
+map
+	reduce: (T # U -> U) # U # List(T) -> U;
+
+var
+	g : T # U -> U;
+	t : T;
+	m : List(U);
+	u : U;
+	
+eqn
+	reduce(g, u, []) = u; 
+	reduce(g, u, t |> m) = reduce(g, g(t, u), m);
+
+% --- testing the implementation
+
+% T and U symbolize "generic" sorts, that get instantiated here
+sort
+	T = Int;
+	U = Int;
+
+map
+	square : T -> U;
+	double : T -> U;
+	_sum : T # U -> U;  % "sum" is a keyword!
+	mult : T # U -> U;
+
+eqn
+	square = lambda n:Int. n * n;
+	double = lambda n:Int. n + n;
+	_sum = lambda n, m: Int. n + m;	
+	mult = lambda n, m: Int. n * m;
+
+map
+	aList: List(Int);
+	squareMap, doubleMap: List(Int);
+	sumReduce, productReduce: Int;
+	
+eqn
+	aList = [2, 3, 5, 7, 11];						% a 'familiar' list
+	squareMap = _map(square, aList);
+	doubleMap = _map(double, aList);
+	sumReduce = reduce(_sum, 0, doubleMap);		% 0 is the neutral element for summation and the initial value of the cumulative sum
+	productReduce = reduce(mult, 1, doubleMap);	% 1 is the neutral element for multiplication and the initial value of the cumulative product

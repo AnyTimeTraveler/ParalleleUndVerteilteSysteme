@@ -1,0 +1,81 @@
+%
+% WaterPouring.mcrl2
+%
+% This file models a number of versions of the water pouring puzzle.
+% See also:  https://en.wikipedia.org/wiki/Water_pouring_puzzle
+%
+% This specification is inspired by a specification in the standard mCRL2 example library
+%
+% Copyright (c) 2019-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.10 - 08 Apr 2020 - GJV - simplifications
+% @version 1.00 - 22 Feb 2020 - GJV - first set of modifications and extensions 
+%
+
+sort
+  	CanID = struct A | B | C;		% names of the cans
+
+act
+  	empty, fill, done: CanID ;
+  	emptyIntoOtherCan, getContentsFromOtherCan, fillUpOtherCan, getFilledFromOtherCan, pour: CanID # Int # CanID ;
+
+proc
+	Can(thisCan:CanID, capacity:Int, contents:Int, target:Int, useTap:Bool, useSink:Bool) =
+		(contents == target)													% solution found?
+		-> done(thisCan)															% we're ready!
+		<> (																		% not reached target yet!
+			(contents > 0) -> (														% some water in can?
+				% either empty can ...
+				(useSink) -> (empty(thisCan) . Can(contents = 0)))    				% if we are allowed to use the sink
+				% ... or pour entire content into another can
+				+ sum otherCan:CanID. (												% determine other can				
+					emptyIntoOtherCan(thisCan, contents, otherCan)					
+					. Can(contents = 0) 		
+				)
+				% ... or fill up other can with (part of) our contents
+				+ sum amount:Nat, otherCan:CanID. ( 								% determine other can and possible amounts to be transferred
+					((0 < amount) && (amount <= contents)) -> (						% test for all units of water that can be provided
+						fillUpOtherCan(thisCan, amount, otherCan)					
+						. Can(contents = contents - amount)
+					)
+				) 
+			+
+			(contents < capacity) -> (												% not reached capacity yet?
+				% either fill up completely ...
+				(useTap) -> (fill(thisCan) . Can(contents = capacity))				% if we are allowed to use the tap
+				% ... or fill up from other can
+				+ sum otherCan:CanID. (  											% determine other can  					
+					getFilledFromOtherCan(otherCan, capacity - contents, thisCan) 
+					. Can(contents = capacity))
+				% ... or get filled up with total contents of other can	
+				+ sum amount:Nat, otherCan:CanID. ( 								% determine other can and possible amounts to be transferred
+					((0 < amount) && (amount <= capacity - contents) ) -> (			% test for all additional units of water that can be contained
+						getContentsFromOtherCan(otherCan, amount, thisCan)			 
+						. Can(contents = contents + amount)
+					)
+				)
+			)
+		)	
+	; 			
+
+% configuration from Cowley (1926) / see Wikipedia		
+	Cowley = Can(A, 8, 8, 4, false, false) || Can(B, 5, 0, 4, false, false) || Can(C, 3, 0, 4, false, false); 
+
+% configuration from Die Hard with a Vengeance (1995)
+	DieHardWithAVengeance = Can(A, 5, 0, 4, true, true) || Can(B, 3, 0, 4, true, true);
+	 								
+
+init	
+	allow({
+		empty, fill, done, pour
+	},
+	comm({ 
+		emptyIntoOtherCan | getContentsFromOtherCan -> pour,
+		fillUpOtherCan | getFilledFromOtherCan -> pour
+	},
+%		DieHardWithAVengeance 	
+		Cowley	
+
+	));

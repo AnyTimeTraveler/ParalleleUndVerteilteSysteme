@@ -1,0 +1,29 @@
+%
+% Struct.mcrl2
+%
+% A simple example of a structured data type.
+%
+% Copyright (c) 2019-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.00 - 22 Apr 2019 - GJV - initial version 
+% @version 1.10 - 01 Apr 2020 - GJV - small changes in layout & comments 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+% Definition starts here
+sort
+	Coin = struct _1c | _2c | _5c | _10c | _20c | _50c | _1Euro | _2Euro;
+
+% testing the data structure
+map
+	test1, test2, test3: Bool;
+
+% Structs have the order of the elements declared automatically!
+eqn
+	test1 = _1c < _5c;
+	test2 = _1c > _5c;
+	test3 = _1c == _5c;
+	

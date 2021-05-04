@@ -1,0 +1,115 @@
+%
+% RiverCrossing.mcrl2
+%
+% This file models one of the river crossing problems: the wolf, goat and cabbage problem.
+% See also: https://en.wikipedia.org/wiki/River_crossing_puzzle
+%
+% In this solution the unsuccesful transitions are suppressed.
+%
+%
+% Copyright (c) 2019-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.10 - 08 Apr 2020 - GJV - small changes 
+% @version 1.00 - 03 Apr 2019 - GJV - initial version 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+%
+% Definition of general debug utilities
+%
+
+sort
+	Message;
+  	Error;
+
+%cons
+%	someCondition -> Error;			
+%	someMessage -< Message;
+
+act
+	msg : Message;  % a message
+	error : Error;  % explicit error 
+	debug : Bool; % check action used during debugging	
+	debug : Int;  % check action used during debugging
+	debug : Int # Int;	% first Int identifies a 'debug' position	
+	debug : Int # Bool;	% first Int identifies a 'debug' position	
+
+	emptyAct;			% placeholder to be able to define an "empty" action-set!
+	emptyComm;		% placeholder to be able to define an "empty" communication!
+
+proc
+	Assert(b : Bool, e : Error) =
+		(b) ->
+			error(e) . delta
+		<> 	
+			tau
+	;	
+
+	FatalError(e: Error) = error(e) . delta;  % show fatal error, then deadlock
+
+% -----------------------------------------------------------------------------------------------------------------------
+%
+% Data type specification of the items to be transported.
+%
+
+sort
+  	Item =
+		struct wolf | goat | cabbage | farmer;				
+
+	ItemSet =
+		Set(Item);		
+
+
+% -----------------------------------------------------------------------------------------------------------------------
+%
+% Data type specification of the side of the river.
+%
+
+sort
+  	RiverSide =
+		struct left | right;	
+
+map
+	otherSide : RiverSide -> RiverSide;
+
+eqn
+	otherSide(left) = right;
+	otherSide(right) = left;
+		
+% -----------------------------------------------------------------------------------------------------------------------
+
+%
+% Specification of the Final System (WCG)
+%
+
+map
+	safeCombination: ItemSet -> Bool;
+
+var
+	items : ItemSet;
+	
+eqn
+	safeCombination(items) = (farmer in items) || !((wolf in items && goat in items) || (goat in items && cabbage in items));
+	
+act
+	cross : ItemSet # RiverSide;		% signals a set of items moving to the other river side, destination given
+	success;							% signals that we have crossed the river!
+
+proc 
+	State(s: RiverSide, items : ItemSet) =
+		(s == right && items == !{}) 		% did we cross the river successfully?
+		-> success							% yes, we did!
+		<> sum item : Item.					% no, try the next move
+		(item in items)						% is the selected item in the current set? (items)
+			-> (safeCombination(items - {item, farmer}))	% do we leave a safe situation behind?
+				-> cross({item, farmer}, otherSide(s)) . State(otherSide(s), !items + {item, farmer})  % yes? then move to the other side!
+	;
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+init
+%	State(left, {farmer, wolf, goat, cabbage})  % all items at the left side
+	State(left, !{})  % all items at the left side. !{} denotes the complete set!
+;

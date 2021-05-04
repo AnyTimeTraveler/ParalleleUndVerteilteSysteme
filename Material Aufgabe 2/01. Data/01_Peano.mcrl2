@@ -1,0 +1,69 @@
+%
+% Peano.mcrl2
+%
+% Simple example showing Peano arithmetic.
+%
+% Copyright (c) 2018-2020
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.00 - 01 Oct 2018 - GJV - initial version 
+% @version 1.10 - 01 Apr 2020 - GJV - small changes in layout & comments 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+%
+% Definition of the sort
+%
+sort
+	Natural;
+
+cons						% constructor
+	zero: Natural;			% zero (0) as a basis
+	s: Natural -> Natural;	% the succesor of the natural
+	
+map
+	plus: Natural # Natural  -> Natural;		% simple addition
+
+var
+	x, y: Natural;
+
+eqn
+	plus(zero, x) = x;					%  0 + x = x
+	plus(s(x), y) = plus(x, s(y));			%  (x + 1) + y = x + (y + 1)
+
+% --- extension with multiplication ---
+
+map
+	mult: Natural # Natural  -> Natural;		% simple multiplication
+
+var
+	x, y: Natural;
+
+eqn
+	mult(zero, x) = zero;				%  0 . x = 0
+	mult(s(x), y) = plus(y, mult(x, y));		%  (x + 1) . y = y + (x . y)
+
+% --- tests ---
+
+map
+	t1, t2, t3: Natural;		% basis for tests
+
+eqn
+	t1 = plus(s(s(zero)), s(s(s(zero)))); 		% 2 + 3
+	t2 = mult(s(s(zero)), zero);			% 2 * 0
+	t3 = mult(s(s(s(zero))), s(s(s(zero))));	% 3 * 3
+
+
+
+
+
+
+
+
+
+
+
+
+

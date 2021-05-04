@@ -1,0 +1,33 @@
+%
+% SimpleCommunication.mcrl2
+%
+% A simple example of a merge (parallel composition) with a communication.
+%
+% Copyright (c) 2015-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.00 - 03 Apr 2015 - GJV - initial version 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+%
+% Definition of general actions
+%
+act
+	a, b, c, d, e, f;
+
+proc 
+	System = comm({
+		a|c -> e,
+		b|d -> f
+	},
+		a . b || c . d
+); 	
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+init
+		System
+;

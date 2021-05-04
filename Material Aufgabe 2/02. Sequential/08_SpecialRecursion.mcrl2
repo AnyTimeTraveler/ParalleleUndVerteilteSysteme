@@ -1,0 +1,40 @@
+%
+% SpecialRecursion.mcrl2
+%
+% A simple example of special recursion features.
+%
+% Copyright (c) 2019-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.10 - 04 Apr 2020 - GJV - small changes in layout & comments 
+% @version 1.00 - 05 Apr 2019 - GJV - initial version 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+sort
+	Icon = struct bell | cherry | bar | seven | lemon;
+
+act
+	display: Icon # Icon # Icon;
+	setReel1 : Icon;
+	setReel2 : Icon;
+	setReel3 : Icon;
+	setNone;
+
+proc
+	SlotMachine(reel1: Icon, reel2: Icon, reel3: Icon) =
+		display(reel1, reel2, reel3) . (
+			sum icon : Icon. setReel1(icon) . SlotMachine(reel1 = icon)      % not all arguments provided
+			+ sum icon : Icon. setReel2(icon) . SlotMachine(reel2 = icon)
+			+ sum icon : Icon. setReel3(icon) . SlotMachine(reel3 = icon)
+			+ setNone . SlotMachine()  % no arguments provided, all arguments unchanged
+		)
+	;                          
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+init
+    SlotMachine(lemon, lemon, lemon)
+;

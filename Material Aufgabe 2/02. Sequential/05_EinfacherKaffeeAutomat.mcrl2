@@ -1,0 +1,42 @@
+%
+% EinfacherKaffeeAutomat.mcrl2
+%
+% The simple coffee machine renamed into a German version.
+%
+% Copyright (c) 2015-2020 HS Emden-Leer
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.30 - 04 Apr 2020 - GJV - small changes in layout & comments 
+% @version 1.20 - 03 Apr 2019 - GJV - updates sommer course 2019 
+% @version 1.10 - 05 May 2016 - GJV - updates sommer course 2016 
+% @version 1.00 - 11 Nov 2015 - GJV - initial version 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+%
+% Definition of the actions
+%
+act
+	quarter;		% quarter inserted into the vending machine	
+	coffee;         	% machine serves a cup of coffee
+	_25c;           	% German equivalent of a quarter	
+	kaffee;         	% a German cup of coffee
+
+%
+% Definition of the processes
+%
+proc
+	SCM =                           
+		quarter . coffee . SCM
+	;	
+	
+	EKA = 
+	    rename({quarter -> _25c, coffee -> kaffee}, SCM)
+    ;
+% -----------------------------------------------------------------------------------------------------------------------
+
+init
+    EKA
+;

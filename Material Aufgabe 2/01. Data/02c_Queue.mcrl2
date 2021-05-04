@@ -1,0 +1,66 @@
+%
+% Queue.mcrl2
+%
+% Simple example of a queue. (using a structured data type)
+%
+% Copyright (c) 2018-2020
+% Hochschule Emden/Leer - University of Applied Sciences Emden/Leer
+% All Rights Reserved.
+%
+% @version 1.00 - 03 Oct 2018 - GJV - initial version 
+% @version 1.10 - 01 Apr 2020 - GJV - small changes in layout & comments 
+%
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+% --- definition of the data elements
+sort
+	Data;
+
+cons	
+	a, b, c : Data;			% a number of data elements
+	nil : Data;				% 'nil' is a special data element
+	
+% --- definition of the queue	 (the outer element is the back of the queue)
+sort
+	Queue = struct empty ? isEmpty | q(Data, Queue);			% struct without selectors
+%	Queue = struct empty ? isEmpty | q(hd: Data, tl: Queue);	% struct with selector: hd: head / tl: tail
+
+map
+	enqueue : Data # Queue -> Queue;	% adds an element to the queue
+	dequeue : Queue -> Queue;			% removes the last element from the back of the queue
+	back : Queue -> Data;				% returns the last element from the queue
+	front : Queue -> Data;				% returns the first element from the queue 
+
+var
+	x, y : Queue;
+	d, e : Data;
+
+eqn
+	enqueue(d, x) = q(d, x);					% the outer element is the back of the queue
+
+	dequeue(empty) = empty;
+	% --- conditional axioms
+	isEmpty(x) -> dequeue(q(d, x)) = empty;				% axiom to use, when x is empty 
+	!isEmpty(x) -> dequeue(q(d, x)) = q(d, dequeue(x));	% axiom to use, when x is not empty 
+
+	back(empty) = nil;
+	back(q(d, x)) = d;
+
+	front(empty) = nil;
+	% --- conditional axioms
+	isEmpty(x) -> front(q(d, x)) = d;
+	!isEmpty(x) -> front(q(d, x)) = front(x);			% travel inwards, towards 'empty'
+
+
+% --- tests ---
+
+map
+	q1, q2 : Queue;
+	d1, d2 : Data;
+	
+eqn
+	q1 = enqueue(c, enqueue(b, enqueue(a, empty)));
+	q2 = dequeue(q1);
+	d1 = front(q1);
+	d2 = back(q1);
