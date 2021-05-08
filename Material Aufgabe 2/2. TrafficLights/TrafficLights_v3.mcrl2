@@ -23,16 +23,12 @@ sort
     
 map
     axis: CardinalDirection -> Axis;
-	next: Axis -> Axis;
 
 eqn
     axis(north) = nsAxis;
     axis(south) = nsAxis;
     axis(east) = ewAxis;
     axis(west) = ewAxis;
-
-	next(nsAxis) = ewAxis;
-	next(ewAxis) = nsAxis;
 
 sort
     Colour =  struct red | yellow | green;                    % 3 colours
@@ -56,75 +52,91 @@ act
     
 proc
     TrafficLight(d : CardinalDirection, startAxis : Axis) =
-        % starting axis can continue, other axes have to wait to take over control
-		TrafficLight(d, red);
-%		show(d, red) . (axis(d) == startAxis) -> TrafficLight(d, red) <> waitForAxis(next(startAxis))
+        % become a normal TrafficLight
+        TrafficLight(d, red);
 
     TrafficLight(d : CardinalDirection, c : Colour) =
-        % show light, if it is red, handover control and get it back, otherwise synchronize, finally continue with next colour          
-		show(d, c) . TrafficLight(d, next(c));
+        % show light
+        show(d, c) . TrafficLight(d, next(c));
 
 
 % -----------------------------------------------------------------------------------------------------------------------
 
-% Map definition starts here
+%
+% Definition of a Map
+%
 
 sort
-	Map = CardinalDirection -> Colour;							% sorts K symbolizes a "generic" Key sort and V symbolizes a "generic" Value sort, that have to be instantiated later
+    Map = CardinalDirection -> Colour;                            % sorts K symbolizes a "generic" Key sort and V symbolizes a "generic" Value sort, that have to be instantiated later
 
 map
-	_Map: Colour -> Map;						% _Map symbolizes the Map constructor, the V element is used as default value to initialize undefined map entries
-	start: Map;
+    _Map: Colour -> Map;                        % _Map symbolizes the Map constructor, the V element is used as default value to initialize undefined map entries
+    start: Map;
 var
-	k: CardinalDirection;
-	v: Colour;
+    k: CardinalDirection;
+    v: Colour;
 
 eqn
-	_Map(v)(k) = v;						% initializes the map with the given default value (catch-all function)
+    _Map(v)(k) = v;                        % initializes the map with the given default value (catch-all function)
 
-        
 
 % -----------------------------------------------------------------------------------------------------------------------
 
-
-
+%
+% Definition of the Function isCrossingUnsafe
 %
 
 map
-	isCrossingSafe: Map -> Bool;
+    % returns a boolean that describes if the crossing is unsafe
+    isCrossingSafe: Map -> Bool;
 
 var
-	c : Map;
+    c : Map;
 eqn
-	isCrossingSafe(c) = (c(north) == red && c(south) == red) || (c(west) == red && c(east) == red);
+    isCrossingSafe(c) = (c(north) == red && c(south) == red) || (c(west) == red && c(east) == red);
+
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+%
+% Definition of a Monitor
+%
 
 act
-	seeColour: CardinalDirection # Colour;
-	colourSeen : CardinalDirection # Colour;
-	crossingUnsafe: Colour # Colour # Colour # Colour;
+    seeColour: CardinalDirection # Colour;
 
 proc
 	Monitor(crossing: Map) = 
 		sum cd : CardinalDirection . (
 			sum col : Colour . (
-				isCrossingSafe(crossing[cd -> col]) -> seeColour(cd, col) . Monitor(crossing[cd -> col])
+				isCrossingSafe(crossing[cd -> col]) ->
+					seeColour(cd, col) . Monitor(crossing[cd -> col])
 			)
-		);
+		)
+	;
 
-    
+
+% -----------------------------------------------------------------------------------------------------------------------
+
+%
+% Definition of an Intersection with four traffic lights and a Monitor
+%
+
+act
+    colourSeen : CardinalDirection # Colour;
+
 proc
     Intersection =
-		allow({
-			colourSeen,
-			crossingUnsafe
-		},
-		comm({
-			show | seeColour -> colourSeen
-		},
-			TrafficLight(north, nsAxis) || TrafficLight(east, nsAxis) || TrafficLight(south, nsAxis) || TrafficLight(west, nsAxis) || Monitor(_Map(red))
+        allow({
+            colourSeen
+        },
+        comm({
+            show | seeColour -> colourSeen
+        },
+            TrafficLight(north, nsAxis) || TrafficLight(east, nsAxis) || TrafficLight(south, nsAxis) || TrafficLight(west, nsAxis) || Monitor(_Map(red))
         ));
 
 % -----------------------------------------------------------------------------------------------------------------------
+
 init
-    Intersection
-;
+    Intersection;

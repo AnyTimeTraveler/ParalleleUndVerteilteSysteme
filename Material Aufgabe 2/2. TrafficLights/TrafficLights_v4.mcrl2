@@ -20,10 +20,9 @@
 sort
     CardinalDirection = struct north | east | south | west;   % 4 directions
     Axis = struct nsAxis | ewAxis;                            % 2 axes
-    
+
 map
     axis: CardinalDirection -> Axis;
-	next: Axis -> Axis;
 
 eqn
     axis(north) = nsAxis;
@@ -31,8 +30,6 @@ eqn
     axis(east) = ewAxis;
     axis(west) = ewAxis;
 
-    next(nsAxis) = ewAxis;
-    next(ewAxis) = nsAxis;
 
 sort
     Colour =  struct red | yellow | green;                    % 3 colours
@@ -44,7 +41,7 @@ eqn
     next(red) = green;
     next(green) = yellow;
     next(yellow) = red;
-    
+
 % -----------------------------------------------------------------------------------------------------------------------
 
 %
@@ -53,30 +50,38 @@ eqn
 
 act
     show : CardinalDirection # Colour;  % the given traffic light shows the given colour
-	becomeActive;
-	becomePassive;
-	sync: Axis;
+    becomeActive;                       % take control when other axis is done
+    becomePassive;                      % hand over control when the axis is done
+    sync: Axis;                         % synchronize the colours of the same axis
 
 proc
     TrafficLight(d : CardinalDirection, startAxis : Axis) =
-		% starting axis can continue, other axes have to wait to take over control
-		(axis(d) == startAxis) -> TrafficLight(d, red) <> becomeActive . TrafficLight(d, red);
+        % starting axis can continue, other axes have to wait to take over control
+        (axis(d) == startAxis) -> TrafficLight(d, red) <> becomeActive . TrafficLight(d, red);
 
     TrafficLight(d : CardinalDirection, c: Colour) =
-		% show light, if it is red, handover control and get it back, otherwise synchronize, finally continue with next colour          
-		show(d, c) . (
-			(c == red) -> sync(axis(d)) . becomePassive . sync(axis(d)) . becomeActive . TrafficLight(d, next(c))
-			<> sync(axis(d)) . TrafficLight(d, next(c))
-		);
+		% show light
+		show(d, c) . sync(axis(d)) . (
+			% if it is red, handover control and get it back, otherwise synchronize
+			(c == red) ->  becomePassive . sync(axis(d)) . becomeActive . TrafficLight(d, next(c)) 
+			<>
+			% finally continue with next colour
+			TrafficLight(d, next(c))
+		)
+	;
 
 % -----------------------------------------------------------------------------------------------------------------------
 
+%
+% Definition of an Intersection with four traffic lights
+%
+
 act
-	colourChanged: Axis;
-	swapActiveLight;
+    colourChanged: Axis;
+    swapActiveLight;
 
 proc
-    Intersection =
+	Intersection =
 		hide({
 			colourChanged,
 			swapActiveLight
@@ -90,12 +95,15 @@ proc
 			sync | sync -> colourChanged,
 			becomeActive | becomePassive -> swapActiveLight
 		},
-			TrafficLight(north, nsAxis) || TrafficLight(east, nsAxis) || TrafficLight(south, nsAxis) || TrafficLight(west, nsAxis)
+			TrafficLight(north, nsAxis) ||
+			TrafficLight(east, nsAxis) ||
+			TrafficLight(south, nsAxis) ||
+			TrafficLight(west, nsAxis)
 		)
 	)
 );
 
 % -----------------------------------------------------------------------------------------------------------------------
+
 init
-    Intersection
-;
+    Intersection;

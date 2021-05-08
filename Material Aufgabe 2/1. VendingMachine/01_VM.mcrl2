@@ -53,6 +53,7 @@ act
     serve: Product;      % serve a certain product
     returnChange: Int;   % request to return the current credit as  change
 
+
 %
 % Definition of the processes
 %
@@ -61,20 +62,27 @@ proc
 
 
     VM(credit : Int) =
-		(credit < 200) -> sum c : Coin . accept(c) . VM(credit + value(c)) +
-
+        % if credit less than 200, accept more coins
+        (credit < 200) -> sum c : Coin . accept(c) . VM(credit + value(c)) +
+        % if there is enough credit for a product, offer it
         sum p : Product . (credit >= price(p)) -> offer(p) . serve(p) . VM(credit - price(p)) +
- 
+        % if there is any credit, offer to return it
         (credit > 0) -> returnChange(credit) . ReturnChange(credit)
     ;
 
     ReturnChange(credit : Int) =
-         (credit >= value(Euro)) -> return(Euro) . ReturnChange(credit - value(Euro)) <>
-         (credit >= value(_50c)) -> return(_50c) . ReturnChange(credit - value(_50c)) <>
-         (credit >= value(_20c)) -> return(_20c) . ReturnChange(credit - value(_20c)) <>
-         (credit >= value(_10c)) -> return(_10c) . ReturnChange(credit - value(_10c)) <>
-         (credit >= value(_5c)) -> return(_5c) . ReturnChange(credit - value(_5c)) <>
-         VM(0)
+        % if remaining credit is greater than a euro, return a euro
+        (credit >= value(Euro)) -> return(Euro) . ReturnChange(credit - value(Euro)) <>
+        % else if remaining credit is greater than 50 cent, return a 50 cent coin
+        (credit >= value(_50c)) -> return(_50c) . ReturnChange(credit - value(_50c)) <>
+        % else if remaining credit is greater than 20 cent, return a 20 cent coin
+        (credit >= value(_20c)) -> return(_20c) . ReturnChange(credit - value(_20c)) <>
+        % else if remaining credit is greater than 10 cent, return a 10 cent coin
+        (credit >= value(_10c)) -> return(_10c) . ReturnChange(credit - value(_10c)) <>
+        % else if remaining credit is greater than 5 cent, return a 5 cent coin
+        (credit >= value(_5c)) -> return(_5c) . ReturnChange(credit - value(_5c)) <>
+        % else, return a new Vending machine with no credit
+        VM(0)
     ;
 
 % -----------------------------------------------------------------------------------------------------------------------
